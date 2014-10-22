@@ -73,6 +73,7 @@ var main = function() {
 					}, 2000);
 				};
 				displayPhoto(0);		
+				$(".todoInput input").focus();
 			});
 		};
 		
