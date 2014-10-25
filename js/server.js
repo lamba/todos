@@ -7,6 +7,7 @@ var
 express = require("express");	
 http = require("http");
 port = 3000;
+
 server = express();
 http.createServer(server).listen(port);
 console.log("Server is listening on port " + port);
