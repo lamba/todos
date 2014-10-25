@@ -55,9 +55,11 @@ var todos = function() {
 			$todoDiv.attr('id',sequenceInt);
 			
 			$checkboxElement = $("<input type='checkbox'>");
+			$checkboxElement.css({'height':'1em', 'width':'1em'});
 			
 			$labelElement = $("<label>");
 			$labelElement.text(" " + todoStr);
+			$labelElement.css({'font-size':'1em'});
 			
 			$todoDiv.hide();
 			
