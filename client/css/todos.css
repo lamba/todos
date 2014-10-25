@@ -44,6 +44,7 @@ section.photos {
 	left:2em;
 	bottom:2em;
 	right:2em;
+	height:20em;
 	margin-top:2em;
 }
 
@@ -54,6 +55,14 @@ section.todos {
 	bottom:2em;
 	right:2em;
 	
+}
+
+section.about {
+	position:relative;
+	top:2em;
+	left:2em;
+	bottom:2em;
+	right:2em;
 }
 
 footer {
