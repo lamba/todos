@@ -143,6 +143,7 @@ var todos = function() {
 	});
   
   $(".todos").on('change', 'input[type=checkbox]', function(event){
+		console.log("checkbox clicked");
 		idInt = $(event.target).parent().attr("id");
 		$(event.target).parent().fadeOut().remove();
 		removeFromTodos(idInt);
