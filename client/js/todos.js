@@ -54,8 +54,6 @@ var todos = function() {
 			$todoDiv = $("<div></div>");
 			$todoDiv.attr('id',sequenceInt);
 			
-			$pElement = $("<p>");
-			
 			$checkboxElement = $("<input type='checkbox'>");
 			
 			$labelElement = $("<label>");
