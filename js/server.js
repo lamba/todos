@@ -11,6 +11,6 @@ port = 3000;
 server = express();
 http.createServer(server).listen(port);
 console.log("Server is listening on port " + port);
-server.get("/hello",function (req, res) {
+server.get("/",function (req, res) {
 	res.send("Hello World!");
 });
