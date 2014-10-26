@@ -4,14 +4,14 @@ h1,h2,h3,h4,h5,h6,p {	margin-bottom:10px; }
 ol,ul,dl {	list-style-position:inside; }
 
 /* Standard selectors */
-body {	width:100%;	height:100%; overflow:hidden;	background-color:#eee; margin-left:20em; margin-right:25em;	font-size:125%; }
+body {	width:100%;	height:100%; overflow:hidden;	background-color:#eee; margin-left:20em; margin-right:20em;	font-size:125%; }
 div.left { float:left; }
 p.title { font-size:2em; font-weight:bold; }
 section.todoInput {	position:relative; top:2em; left:2em; bottom:2em; right:2em; }
 input.todos { font-size:1em; }
 button { width:4em; height:1.5em; }
 section.todos {	position:relative; top:3em;	left:2em;	bottom:2em;	right:2em; }
-div.right { float:right; margin-right:50em; }
+div.right { float:right; margin-right:40em; }
 img { height:10em; }
 section.photos { position:relative;	top:2em; left:2em; bottom:2em; right:2em;	height:10em; }
 section.about {	position:relative; top:4em;	left:2em;	bottom:2em;	right:2em; }
