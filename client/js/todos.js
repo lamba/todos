@@ -113,15 +113,15 @@ var todos = function() {
 			console.log("Size = " + size);
 			console.log(JSON.stringify(flickrResponse));
 			var display_photo = function (photo_index){
-				$previous_img_element = $imgElement;
 				$imgElement.hide();
 				$imgElement.attr("src", flickrResponse.items[photo_index].media.m);
 				$("main .photos").append($imgElement);
 				console.log("image width: " + $imgElement.width());
-				if ($imgElement.width() > 300) { //don't display extra wide pics that screw up the layout
+				if ($imgElement.width() > 300) { //don't display extra wide pics that mess up the layout
 					console.log("skipping image - too wide: " + $imgElement.width());
 					$previous_img_element.fadeIn();
 				} else {
+					$previous_img_element = $imgElement;
 					$imgElement.fadeIn();
 				}
 				setTimeout(function() {
