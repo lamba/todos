@@ -107,14 +107,23 @@ var todos = function() {
 		};
 		url = url + tag;
 		$.getJSON(url, function(flickrResponse) {
-			var size = flickrResponse.items.length;
+			var 
+				size = flickrResponse.items.length,
+				$previous_img_element;
 			console.log("Size = " + size);
 			console.log(JSON.stringify(flickrResponse));
 			var display_photo = function (photo_index){
+				$previous_img_element = $imgElement;
 				$imgElement.hide();
 				$imgElement.attr("src", flickrResponse.items[photo_index].media.m);
 				$("main .photos").append($imgElement);
-				$imgElement.fadeIn();
+				console.log("image width: " + $imgElement.width());
+				if ($imgElement.width() > 300) { //don't display extra wide pics that screw up the layout
+					console.log("skipping image - too wide: " + $imgElement.width());
+					$previous_img_element.fadeIn();
+				} else {
+					$imgElement.fadeIn();
+				}
 				setTimeout(function() {
 					photo_index = photo_index + 1;
 					if (photo_index > size - 1) {
