@@ -5,18 +5,18 @@ ol,ul,dl {	list-style-position:inside; }
 
 /* Standard selectors */
 body {	width:900px; margin:auto; height:100%; overflow:hidden;	background-color:#eee; font-size:125%; }
-div.left { float:left; }
+div.left { float:left; width:49%}
 p.title { font-size:2em; font-weight:bold; }
-section.todoInput {	position:relative; top:2em; left:2em; bottom:2em; right:2em; }
+section.todoInput {	position:relative; top:2em; left:1em; bottom:2em; right:2em; }
 input.todos { font-size:1em; }
 button { width:4em; height:1.5em; }
-section.todos {	position:relative; top:3em;	left:2em;	bottom:2em;	right:2em; }
-div.right { float:right; margin-right:0em; }
+section.todos {	position:relative; top:2em;	left:1em;	bottom:2em;	right:2em; }
+div.right { float:right; margin-right:0em; width:49%}
 img { height:10em; }
-section.photos { position:relative;	top:2em; left:2em; bottom:2em; right:2em;	height:10em; }
-section.about {	position:relative; top:4em;	left:2em;	bottom:2em;	right:2em; }
+section.photos { position:relative;	top:2em; left:2em; bottom:2em; right:1em;	height:10em; }
+section.about {	position:relative; top:4em;	left:2em;	bottom:2em;	right:1em; }
 #about-main { font-weight:bold; }
-section.about p { width:15em; }
+section.about p { width:20em; }
 #about-todos { font-weight:bold; }
 section.about li { font-weight:regular; }
 footer { position:absolute;	bottom:0;	right:2px; width:300px;	height:16px; cursor:pointer; border-radius:8px 0 0 0;	backgroud-color:#f00; }
