@@ -22,83 +22,211 @@ var todos = function() {
   
   //Module scope variables
   var
-    //Set constants		
+    //Constants		
 		url = "https://api.flickr.com/services/feeds/photos_public.gne?format=json&jsoncallback=?",
 		tag = "&tags=nature",
     
-		//Declare all other module scope variables
-		//jQuery
-		$imgElement = $("<img>"),
-		$todosList = [],
-		$todosStr,
-		$checkboxElement,
-		$labelElement,
-		$todoDiv,
-		
-		//Regular
+		//General variables
+		todosList = [],
+		todosStr,
+		completedTodosList = [],
+		completedTodosStr,
 		todoStr,
 		idInt,
 		sequenceInt=0,
+		boolCompletedTodos=false,
+		boolShowHistory,
+				
+		//jQuery elements
+		//landing page containers
+		$divLeft,
+		$divRight,
+		$sectionUser,
+		$sectionPreferences,
+		$sectionTodoInput,
+		$sectionTodos,
+		$sectionCompletedTodos,
+		$sectionPhotos,
+		$sectionAbout,
 		
-		//Module scope function names
+		//landing page widgets
+		$buttonLogin,
+		$labelOr,
+		$buttonRegister,
+		$cbShowHistory,
+		$labelShowHistory,
+		$pAddTodo,
+		$inputTodo,
+		$buttonAddTodo,
+		$cbTodo,
+		$labelTodo,
+		$divTodo,
+		$h1Separator,
+		$imgTodos = $("<img>"),
+		$pAboutHeading,
+		$pAbout,
+		$pAppTodosHeading,
+		$pAppTodos,
+		$pEmail,
+		
+		//function names
 		addTodo,
 		printTodos,
 		removeFromTodos,
+		initialize,
 		getPhotos;
 		
-	addTodo = function() {
-		var $newTodo;
-		if ($(".todoInput input").val() !== "") {
-			todoStr = $(".todoInput input").val();
-			
-			$todoDiv = $("<div></div>");
-			$todoDiv.attr('id',sequenceInt);
-			
-			$checkboxElement = $("<input type='checkbox'>");
-			$checkboxElement.css({'height':'1em', 'width':'1em'});
-			
-			$labelElement = $("<label>");
-			$labelElement.text(" " + todoStr);
-			$labelElement.css({'font-size':'1em'});
-			
-			$todoDiv.hide();
-			
-			$todoDiv.append($checkboxElement);
-			$todoDiv.append($labelElement);
-			$(".todos").append($todoDiv);
+	initialize = function() {
+		//Create landing page elements
+		$divLeft = $("<div class='left'></div>");
+		
+		$sectionUser = $("<section class='user'></section>");
+		$buttonLogin = $("<button class='login'>Login</button>").prop('disabled', true);
+		$labelOr = $("<label> or </label>");
+		$buttonRegister = $("<button class='register'>Register</button>").prop('disabled', true);
+		$sectionUser.append($buttonLogin);
+		$sectionUser.append($labelOr);
+		$sectionUser.append($buttonRegister);
+		
+		$sectionPreferences = $("<section class='preferences'></section>");
+		$cbShowHistory = $("<input type='checkbox' class='cbShowHistory'>").prop('disabled', true);
+		$labelShowHistory = $("<label class='labelShowHistory'> Show History (Completed ToDos)</label>");
+		$sectionPreferences.append($cbShowHistory);
+		$sectionPreferences.append($labelShowHistory);
 
-			$todoDiv.fadeIn();
+		$sectionTodoInput = $("<section class='todoInput'></section>");
+		$pAddTodo = $("<p class='app-title'>Add ToDo</p>");
+		$inputTodo = $("<input type='text' id='inputTodo'>");
+		$buttonAddTodo = ("<button id='addTodo'>+</button>");
+		$sectionTodoInput.append($pAddTodo);
+		$sectionTodoInput.append($inputTodo);
+		$sectionTodoInput.append($buttonAddTodo);
+		
+		$sectionTodos = ("<section class='todos'></section>");
+		$sectionCompletedTodos = ("<section class='completedTodos'></section>");
+
+		$divLeft.append($sectionUser);
+		$divLeft.append($sectionPreferences);
+		$divLeft.append($sectionTodoInput);
+		$divLeft.append($sectionTodos);
+		$divLeft.append($sectionCompletedTodos);
+		
+		$divRight = $("<div class='right'></div>");
+
+		$sectionPhotos = $("<section class='photos'></section>");				
+
+		$sectionAbout = $("<section class='about'></section>");
+		$pAboutHeading = $("<p id='about-heading'>About This App</p>");
+		$pAbout = $("<p id='about'>" 
+			+ "This is v0.1 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, AJAX, JSON, Node.js & Mongo, "
+			+ "deployed to the Heroku cloud PaaS (based on Salesforce.com and Amazon's AWS)."
+			+ "</p>");
+		$pAppTodosHeading = $("<p id='app-todos-heading'>ToDos for this ToDos app (pun intended!)</p>");
+		$pAppTodos = $("<p id='app-todos'>" 
+			+ "<li>Support a broader range of browsers"
+			+	"<li>Improve responsive design"
+			+	"<li>Skip images wider than 300 pixels"
+			+	"<li>Add persistence (Mongo)"
+			+	"<li>Add authentication and authorization"
+			+	"<li>Show history of completed to-dos"
+			+ "</p>");
+		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
+			
+		$sectionAbout.append($pAboutHeading);
+		$sectionAbout.append($pAbout);
+		$sectionAbout.append($pAppTodosHeading);
+		$sectionAbout.append($pAppTodos);
+		$sectionAbout.append($pEmail);
+		
+		$divRight.append($sectionPhotos);		
+		$divRight.append($sectionAbout);
+		
+		$("body").append($divLeft);
+		$("body").append($divRight);
+	};
+	
+	addTodo = function(completed_todo) {
+		var $newTodo;
+		if ($(".todoInput input").val() !== "" || completed_todo !== "") {
+			if ($(".todoInput input").val() !== "") {
+				todoStr = $(".todoInput input").val();
+			} else {
+				todoStr = completed_todo;
+			};
+			
+			$divTodo = $("<div></div>");
+			$divTodo.attr('id',sequenceInt);
+			
+			$cbTodo = $("<input type='checkbox'>");			
+			$cbTodo.attr('vertical-align', 'bottom');
+			
+			$labelTodo = $("<label>");
+			$labelTodo.text(" " + todoStr);
+
+			$h1Separator = $("<h1></h1>");
+			
+			$divTodo.hide();
+			
+			$divTodo.append($cbTodo);
+			$divTodo.append($labelTodo);
+
+			if (completed_todo !== "") {
+				$cbTodo.attr('disabled', 'disabled');
+				$cbTodo.attr('checked', 'checked');
+				$labelTodo.css({'color':'gray'});
+				completedTodosList.push($divTodo);
+				$(".completedTodos").append($divTodo);
+				boolCompletedTodos = true;
+			} else {
+				$(".todos").append($divTodo);
+				todosList.push($divTodo);
+			};
+			
+			if (boolCompletedTodos) {
+				$(".todos").find("h1").remove();
+				$(".todos").append($h1Separator);
+			}
+
+			$divTodo.fadeIn();
 			
 			$(".todoInput input").val("");
 			
-			$todosList.push($todoDiv);
-			console.log("todos array size = " + $todosList.length);
+			console.log("todos array size = " + todosList.length);
 			printTodos();
 			sequenceInt = sequenceInt + 1;
 		}
 	};
 	
 	printTodos = function() {
-		$todosStr = "";
-		$todosList.forEach(function(todo_div){
-			$todosStr += todo_div.find("label").text() + ",";
+		todosStr = "";
+		completedTodosStr = "";
+		todosList.forEach(function(todo_div){
+			todosStr += todo_div.find("label").text() + ",";
 		});
-		console.log("todos:"+$todosStr);
+		console.log("todos:"+todosStr);
+		completedTodosList.forEach(function(todo_div){
+			completedTodosStr += todo_div.find("label").text() + ",";
+		});
+		console.log("completed todos:"+completedTodosStr);
 	};
 	
 	removeFromTodos = function(id_int) {
 		var 
 			array_index = -1,
-			remove_index = -1;
+			remove_index = -1,
+			completed_todo;
 		console.log("removing id: " + id_int);
-		$todosList.forEach(function(todo_div) {
+		todosList.forEach(function(todo_div) {
 			array_index++;
 			if (todo_div.attr("id") === id_int) {
+				completed_todo = todo_div.find('label').text().substring(1);
 				remove_index = array_index;
 				console.log("array index to remove: " + remove_index);
 			}
 		});
-		$todosList.splice(remove_index,1);
+		todosList.splice(remove_index,1);
+		addTodo(completed_todo);
+		
 	};
 	
 	getPhotos = function(todo) {
@@ -107,23 +235,14 @@ var todos = function() {
 		};
 		url = url + tag;
 		$.getJSON(url, function(flickrResponse) {
-			var 
-				size = flickrResponse.items.length,
-				$previous_img_element;
+			var size = flickrResponse.items.length;
 			console.log("Size = " + size);
 			console.log(JSON.stringify(flickrResponse));
 			var display_photo = function (photo_index){
-				$imgElement.hide();
-				$imgElement.attr("src", flickrResponse.items[photo_index].media.m);
-				$("main .photos").append($imgElement);
-				console.log("image width: " + $imgElement.width());
-				if ($imgElement.width() > 300) { //don't display extra wide pics that mess up the layout
-					console.log("skipping image - too wide: " + $imgElement.width());
-					$previous_img_element.fadeIn();
-				} else {
-					$previous_img_element = $imgElement;
-					$imgElement.fadeIn();
-				}
+				$imgTodos.hide();
+				$imgTodos.attr("src", flickrResponse.items[photo_index].media.m);
+				$(".photos").append($imgTodos);
+				$imgTodos.fadeIn();
 				setTimeout(function() {
 					photo_index = photo_index + 1;
 					if (photo_index > size - 1) {
@@ -138,28 +257,31 @@ var todos = function() {
 		});
 	};
 		
+	initialize();
 	getPhotos();
 	
 	//Event handlers
   $(".todoInput button").on("click", function(event){
-		addTodo();
-		$(".todoInput input").focus();
+		addTodo("");
+		$("#inputTodo").focus();
   });
   
   $(".todoInput input").on("keypress", function(event){
 		if (event.keyCode === 13) {
-			addTodo();
-			$(".todoInput input").focus();
+			addTodo("");
+			$("#inputTodo").focus();
+			window.setTimeout(function(){
+				$('#inputTodo').focus();
+			}, 50);
 		}
 	});
   
   $(".todos").on('change', 'input[type=checkbox]', function(event){
-		console.log("checkbox clicked");
 		idInt = $(event.target).parent().attr("id");
 		$(event.target).parent().fadeOut().remove();
 		removeFromTodos(idInt);
 		printTodos();		
-		$(".todoInput input").focus();
+		$("#inputTodo").focus();
 	});
   
 };	
