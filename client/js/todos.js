@@ -36,7 +36,11 @@ var todos = function() {
 		sequenceInt=0,
 		boolCompletedTodos=false,
 		boolShowHistory,
-				
+		userEmail = "Anonymous",
+		boolRememberMe = false,
+		boolLoggedIn = false,
+		savedTodos,
+		
 		//jQuery elements
 		//landing page containers
 		$divLeft,
@@ -50,9 +54,10 @@ var todos = function() {
 		$sectionAbout,
 		
 		//landing page widgets
-		$buttonLogin,
+		$labelWelcome,
+		$buttonLoginPage,
 		$labelOr,
-		$buttonRegister,
+		$buttonRegisterPage,
 		$cbShowHistory,
 		$labelShowHistory,
 		$pAddTodo,
@@ -68,25 +73,181 @@ var todos = function() {
 		$pAppTodosHeading,
 		$pAppTodos,
 		$pEmail,
+		$buttonLogout,
+		
+		//login/register page widgets
+		$inputEmail,
+		$labelEmail,
+		$inputPassword,
+		$labelPassword,
+		$cbRememberMe,
+		$labelRememberMe,
+		$buttonLogin,
+		$buttonRegister,
+		$labelLoginPageErrorMessage,
 		
 		//function names
+		getCookies,
 		addTodo,
 		printTodos,
 		removeFromTodos,
-		initialize,
-		getPhotos;
+		initializeLandingPage,
+		registerLandingPageEvents,
+		getPhotos,
+		disableLoginRegister,
+		initializeLoginPage,
+		loginUser,
+		registerUser,
+		registerLoginPageEvents,
+		manageCookies,
+		getTodos,
+		displayTodos;
 		
-	initialize = function() {
+	//Event handlers
+	registerLandingPageEvents = function(){
+		$(".todoInput button").on("click", function(event){
+			addTodo("");
+			$("#inputTodo").focus();
+		});
+		
+		$(".todoInput input").on("keypress", function(event){
+			if (event.keyCode === 13) {
+				addTodo("");
+				$("#inputTodo").focus();
+				window.setTimeout(function(){
+					$('#inputTodo').focus();
+				}, 50);
+			}
+		});
+		
+		$(".todos").on('change', 'input[type=checkbox]', function(event){
+			idInt = $(event.target).parent().attr("id");
+			$(event.target).parent().fadeOut().remove();
+			removeFromTodos(idInt);
+			printTodos();		
+			$("#inputTodo").focus();
+		});
+		
+		$("button.goToLoginPage").on("click", function(event){
+			initializeLoginPage();
+		});  	
+
+		$("button#buttonLogout").on("click", function(event){
+			boolLoggedIn = false;
+			initializeLandingPage();
+		});  	
+	};
+	
+	registerLoginPageEvents = function(){
+		$("button.register").on("click", function(event){
+			registerUser();
+		});
+		
+		$("button.login").on("click", function(event){
+			loginUser();
+		});			
+
+		$("#cbRememberMe").on('click', function(event){
+			console.log("cbRememberMe clicked");
+			if ($('#cbRememberMe').is(':checked')) {
+				boolRememberMe = true;
+			} else {
+				boolRememberMe = false;
+			};
+		});			
+	};
+	
+	disableLoginRegister = function() {
+		$buttonLoginPage.prop('disabled', true);		
+		$buttonRegisterPage.prop('disabled', true);
+	};
+	
+	getCookies = function() {
+		console.log("getCookies");
+		console.log("cookie: " + $.cookie('email'));
+		if ($.cookie('email') !== undefined) {
+			boolRememberMe = true;
+			userEmail = $.cookie('email');
+		} else {
+			boolRememberMe = false;
+			userEmail = 'Anonymous';		
+		};
+		//$.get("cookies", {}, function (response) {
+			//console.log("Cookies: " + response.cookies);
+		//});	
+	};
+	
+	getTodos = function() {
+		console.log("getTodos");
+		$.get('todos.json', {'email':userEmail}, function (response) {
+			console.log("todos.json response: " + JSON.stringify(response));
+			savedTodos = response;
+		});
+		/*
+		$.post('getTodos', {'email':userEmail}, function (response) {
+			console.log("getTodos response: " + JSON.stringify(response));
+		});
+		*/		
+	};
+	
+	displayTodos = function() {
+		console.log("displayTodos");
+		printTodos();
+		$(".todos").fadeOut();
+		$(".completedTodos").fadeOut();				
+		if (todosList !== null) { //display todosList
+			console.log("displaying todosList");
+			todosList.forEach(function(todo){
+				$(".todos").append(todo);
+			});
+		};
+		if (completedTodosList !== null) {
+			$(".todos").append($h1Separator);
+			console.log("displaying completedTodosList");
+			completedTodosList.forEach(function(todo){
+				$(".completedTodos").append(todo);
+			});
+		};	
+		$(".todos").fadeIn();
+		$(".completedTodos").fadeIn();				
+	};
+	
+	manageCookies = function() {
+		console.log("manageCookies");
+		console.log("boolRememberMe: " + boolRememberMe);
+		if (boolRememberMe) {
+			//if expires/maxAge is omitted it results in a session cookie (deleted upon browser close)
+			$.cookie('email', userEmail, {expires:365,httpOnly:false});
+		} else {
+			$.removeCookie('email');			
+		};
+		console.log("cookie: " + $.cookie('email'));
+	};
+		
+	initializeLandingPage = function() {
+		console.log("initializeLandingPage");
+		//getCookies();
+		$("body").empty();
+		
 		//Create landing page elements
 		$divLeft = $("<div class='left'></div>");
 		
 		$sectionUser = $("<section class='user'></section>");
-		$buttonLogin = $("<button class='login'>Login</button>").prop('disabled', true);
+		$labelWelcome = $("<label id='welcome-label'>Welcome, </label>" + userEmail + "!<br>");
+		$buttonLoginPage = $("<button class='goToLoginPage'>Login</button>");
 		$labelOr = $("<label> or </label>");
-		$buttonRegister = $("<button class='register'>Register</button>").prop('disabled', true);
-		$sectionUser.append($buttonLogin);
-		$sectionUser.append($labelOr);
-		$sectionUser.append($buttonRegister);
+		$buttonRegisterPage = $("<button class='goToLoginPage'>Register</button>");
+		$buttonLogout = $("<button id='buttonLogout'>Logout</button>");
+		
+		$sectionUser.append($labelWelcome);
+		if (boolLoggedIn === false) {
+			$sectionUser.append($buttonLoginPage);
+			$sectionUser.append($labelOr);
+			$sectionUser.append($buttonRegisterPage);
+		} else {
+			$sectionUser.append($buttonLogout);
+		};
+		//disableLoginRegister();
 		
 		$sectionPreferences = $("<section class='preferences'></section>");
 		$cbShowHistory = $("<input type='checkbox' class='cbShowHistory'>").prop('disabled', true);
@@ -96,7 +257,7 @@ var todos = function() {
 
 		$sectionTodoInput = $("<section class='todoInput'></section>");
 		$pAddTodo = $("<p class='app-title'>Add ToDo</p>");
-		$inputTodo = $("<input type='text' id='inputTodo'>");
+		$inputTodo = $("<input type='text' id='inputTodo' maxlength='35'>");
 		$buttonAddTodo = ("<button id='addTodo'>+</button>");
 		$sectionTodoInput.append($pAddTodo);
 		$sectionTodoInput.append($inputTodo);
@@ -118,17 +279,17 @@ var todos = function() {
 		$sectionAbout = $("<section class='about'></section>");
 		$pAboutHeading = $("<p id='about-heading'>About This App</p>");
 		$pAbout = $("<p id='about'>" 
-			+ "This is v0.1 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, AJAX, JSON, Node.js & Mongo, "
-			+ "deployed to the Heroku cloud PaaS (based on Salesforce.com and Amazon's AWS)."
+			+ "This is v0.1.1 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, SSL, AJAX, JSON, Node.js & Mongo, "
+			+ "deployed to the Heroku cloud PaaS (managed by Salesforce.com and based on Amazon's AWS)."
 			+ "</p>");
 		$pAppTodosHeading = $("<p id='app-todos-heading'>ToDos for this ToDos app (pun intended!)</p>");
 		$pAppTodos = $("<p id='app-todos'>" 
-			+ "<li>Support a broader range of browsers"
+			+ "<li>Add a test framework and suite of tests"
 			+	"<li>Improve responsive design"
 			+	"<li>Skip images wider than 300 pixels"
 			+	"<li>Add persistence (Mongo)"
 			+	"<li>Add authentication and authorization"
-			+	"<li>Show history of completed to-dos"
+			+	"<li>Make 'show history' configurable"
 			+ "</p>");
 		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
 			
@@ -143,6 +304,11 @@ var todos = function() {
 		
 		$("body").append($divLeft);
 		$("body").append($divRight);
+		
+		registerLandingPageEvents();
+		$(".todoInput input").focus();
+		getTodos();
+		displayTodos();
 	};
 	
 	addTodo = function(completed_todo) {
@@ -207,7 +373,7 @@ var todos = function() {
 		completedTodosList.forEach(function(todo_div){
 			completedTodosStr += todo_div.find("label").text() + ",";
 		});
-		console.log("completed todos:"+completedTodosStr);
+		console.log("completed todos:" + completedTodosStr);
 	};
 	
 	removeFromTodos = function(id_int) {
@@ -226,7 +392,122 @@ var todos = function() {
 		});
 		todosList.splice(remove_index,1);
 		addTodo(completed_todo);
+
+		$.post("removeTodo", {"_id":"", "completed_date":new Date()}, function (response) {
+			console.log("removeTodo response: " + response);
+		});		
+	};
+	
+	initializeLoginPage = function() {
+		console.log("initializeLoginPage");
+		//getCookies();
+		//$divLeft.fadeOut();
+		$divLeft.empty();
 		
+		$inputEmail = $("<input type='text' id='inputEmail' maxlength='35'></input>");
+		$labelEmail = $("<label id='labelEmail'>Email</label><br>");
+		$inputPassword = $("<input type='text' id='inputPassword' maxlength='35'></input>");
+		$labelPassword = $("<label id='labelPassword'>Password</label><br>");
+		$cbRememberMe = $("<input type='checkbox' id='cbRememberMe'>");
+		$labelRememberMe = $("<label id='labelRememberMe'>Remember Email</label><br>");
+		$buttonLogin = $("<button class='login'>Login</button>");
+		$buttonRegister = $("<button class='register'>Register</button>");
+		$labelLoginPageErrorMessage = $("<br><label id='labelLoginPageErrorMessage'></label>");
+		$sectionUser.empty();
+		$sectionUser.append($inputEmail);
+		$sectionUser.append($labelEmail);
+		$sectionUser.append($inputPassword);
+		$sectionUser.append($labelPassword);
+		$sectionUser.append($cbRememberMe);
+		$sectionUser.append($labelRememberMe);
+		$sectionUser.append($buttonLogin);
+		$sectionUser.append($labelOr);
+		$sectionUser.append($buttonRegister);
+		$sectionUser.append($labelLoginPageErrorMessage);
+		
+		getCookies();
+		console.log('boolRememberMe: ' + boolRememberMe);
+		if (boolRememberMe) {
+			$cbRememberMe.prop('checked', true);
+			$inputEmail.val(userEmail);
+			$("#inputPassword").focus();
+			window.setTimeout(function(){
+				$('#inputPassword').focus();
+			}, 50);
+		} else {
+			$cbRememberMe.prop('checked', false);		
+			$inputEmail.val('');		
+			$("#inputEmail").focus();
+		};
+		$divLeft.append($sectionUser);
+		//$divLeft.fadeIn; //fadeIn seems to flicker or execute twice
+		
+		registerLoginPageEvents();
+		$("#inputEmail").focus();
+	};
+	
+	loginUser = function(){
+		console.log("loginUser");
+		$labelLoginPageErrorMessage.text("");
+		if ($("#inputEmail").val() !== "" && $("#inputPassword").val() !== "") {
+			$.post("login", {"email":$("#inputEmail").val(), "password":$("#inputPassword").val()}, function (response) {
+				console.log("loginUser response: " + response);
+				if (response.indexOf("Success") === -1) {
+					boolLoggedIn = false;
+					$labelLoginPageErrorMessage.text(response);
+				};
+			})
+				.error(function(){
+					boolLoggedIn = false;
+					console.log("login request failed");
+					$labelLoginErrorMessage.text(response);
+				})
+				.done(function(){
+					console.log("login request completed");
+					userEmail = $("#inputEmail").val();
+					if ($labelLoginPageErrorMessage.text() === "") {
+						boolLoggedIn = true;
+						manageCookies();
+						initializeLandingPage();
+						setupSectionUser();
+					};
+			});		
+		} else {
+			boolLoggedIn = false;
+			$labelLoginPageErrorMessage.text("Supply both email and password");
+		};
+	};
+	
+	registerUser = function(){
+		console.log("registerUser");
+		$labelLoginPageErrorMessage.text("");
+		if ($("#inputEmail").val() !== "" && $("#inputPassword").val() !== "") {
+			$.post("users", {"email":$("#inputEmail").val(), "password":$("#inputPassword").val()}, function (response) {
+				console.log("registerUser response: " + response);
+				if (response.indexOf("duplicate key error") > -1) {
+					boolLoggedIn = false;
+					$labelLoginPageErrorMessage.text("This email is already registered");
+				};
+			})
+				.error(function(){
+					boolLoggedIn = false;
+					console.log("registration request failed");
+					$labelLoginErrorMessage.text(response);
+				})
+				.done(function(){
+					console.log("registration request completed");
+					userEmail = $("#inputEmail").val();
+					if ($labelLoginPageErrorMessage.text() === "") {
+						boolLoggedIn = true;
+						manageCookies();
+						initializeLandingPage();
+						setupSectionUser();
+					};
+			});		
+		} else {
+			boolLoggedIn = false;
+			$labelLoginPageErrorMessage.text("Supply both email and password");
+		};
 	};
 	
 	getPhotos = function(todo) {
@@ -253,37 +534,13 @@ var todos = function() {
 				}, 2000);
 			};
 			display_photo(0);		
-			$(".todoInput input").focus();
 		});
 	};
 		
-	initialize();
+	getCookies();	
+	initializeLandingPage();
 	getPhotos();
 	
-	//Event handlers
-  $(".todoInput button").on("click", function(event){
-		addTodo("");
-		$("#inputTodo").focus();
-  });
-  
-  $(".todoInput input").on("keypress", function(event){
-		if (event.keyCode === 13) {
-			addTodo("");
-			$("#inputTodo").focus();
-			window.setTimeout(function(){
-				$('#inputTodo').focus();
-			}, 50);
-		}
-	});
-  
-  $(".todos").on('change', 'input[type=checkbox]', function(event){
-		idInt = $(event.target).parent().attr("id");
-		$(event.target).parent().fadeOut().remove();
-		removeFromTodos(idInt);
-		printTodos();		
-		$("#inputTodo").focus();
-	});
-  
 };	
   
 //Start app once DOM is ready
