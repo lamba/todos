@@ -320,6 +320,10 @@ var todos = function() {
 				todoStr = completed_todo;
 			};
 			
+			$.post("addTodo", {'email':userEmail, 'description':todoStr, 'created_date':new Date()}, function (response) {
+				console.log("addTodo response: " + JSON.stringify(response));
+			});					
+			
 			$divTodo = $("<div></div>");
 			$divTodo.attr('id',sequenceInt);
 			
@@ -359,8 +363,8 @@ var todos = function() {
 			
 			console.log("todos array size = " + todosList.length);
 			printTodos();
-			sequenceInt = sequenceInt + 1;
-		}
+			sequenceInt = sequenceInt + 1;			
+		};
 	};
 	
 	printTodos = function() {

@@ -132,21 +132,22 @@ server.get("/alltodos.json", urlencodedParser, function (req, res) {
 	});
 });
 
-//add todo
-server.post("/todos", urlencodedParser, function (req, res) {
-	console.log("add todo: post /todos request: " + req.body);
+server.post("/addTodo", urlencodedParser, function (req, res) {
+	console.log("/addTodo request: " + req.body);
 	var newTodo = new ToDo({
 		"description":req.body.description,
-		"email":req.body.email
+		"email":req.body.email,
+		"created_date":req.body.created_date
 	});
 	newTodo.save( function (err, result) {
 		if (err !== null) {
 			console.log(err);
-			res.send("Error");
+			console.log(result);
+			res.send(result);			
 			return false;
 		} else {
 			console.log(result);
-			res.send("Success");			
+			res.send(result);			
 		};
 	});
 });
