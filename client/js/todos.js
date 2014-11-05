@@ -312,7 +312,7 @@ var todos = function() {
 	};
 	
 	addTodo = function(completed_todo) {
-		var $newTodo;
+		var add_response;
 		if ($(".todoInput input").val() !== "" || completed_todo !== "") {
 			if ($(".todoInput input").val() !== "") {
 				todoStr = $(".todoInput input").val();
@@ -320,12 +320,20 @@ var todos = function() {
 				todoStr = completed_todo;
 			};
 			
-			$.post("addTodo", {'email':userEmail, 'description':todoStr, 'created_date':new Date()}, function (response) {
-				console.log("addTodo response: " + JSON.stringify(response));
-			});					
-			
 			$divTodo = $("<div></div>");
 			$divTodo.attr('id',sequenceInt);
+
+			$.post("addTodo", {'email':userEmail, 'description':todoStr, 'created_date':new Date()}, function (response) {
+				console.log("addTodo response: " + JSON.stringify(response));
+				add_response = response;
+			})
+				.error(function(){
+				})
+				.done(function(){
+				  console.log('id for added todo: ' + add_response._id);
+					$divTodo.attr('data-mongoid',add_response._id);
+				})
+			;					
 			
 			$cbTodo = $("<input type='checkbox'>");			
 			$cbTodo.attr('vertical-align', 'bottom');
@@ -384,21 +392,25 @@ var todos = function() {
 		var 
 			array_index = -1,
 			remove_index = -1,
-			completed_todo;
+			completed_todo,
+			todo_div,
+			todo;
 		console.log("removing id: " + id_int);
 		todosList.forEach(function(todo_div) {
 			array_index++;
 			if (todo_div.attr("id") === id_int) {
+				todo = todo_div;
 				completed_todo = todo_div.find('label').text().substring(1);
 				remove_index = array_index;
 				console.log("array index to remove: " + remove_index);
 			}
 		});
 		todosList.splice(remove_index,1);
-		addTodo(completed_todo);
+		addTodo(completed_todo); //method overloading
 
-		$.post("removeTodo", {"_id":"", "completed_date":new Date()}, function (response) {
-			console.log("removeTodo response: " + response);
+		console.log('todo id to remove: ' + todo.data('mongoid'));
+		$.post("removeTodo", {"_id":todo.data('mongoid'), "completed_date":new Date()}, function (response) {
+			console.log("removeTodo response: " + JSON.stringify(response));
 		});		
 	};
 	
@@ -475,7 +487,8 @@ var todos = function() {
 						initializeLandingPage();
 						setupSectionUser();
 					};
-			});		
+				})
+			;		
 		} else {
 			boolLoggedIn = false;
 			$labelLoginPageErrorMessage.text("Supply both email and password");
@@ -507,7 +520,8 @@ var todos = function() {
 						initializeLandingPage();
 						setupSectionUser();
 					};
-			});		
+				})
+			;		
 		} else {
 			boolLoggedIn = false;
 			$labelLoginPageErrorMessage.text("Supply both email and password");

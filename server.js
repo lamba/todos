@@ -106,17 +106,51 @@ server.post("/getTodos", urlencodedParser, function (req, res) {
 });
 
 server.post("/removeTodo", urlencodedParser, function (req, res) {
-	console.log("/removeTodo request: " + req.body);
-	ToDo.find({'email':req.body._id}, function (err, result) {
+	console.log("/removeTodo request: " + JSON.stringify(req.body));
+	/*
+	ToDo.update({'_id':req.body._id}, {'completed_date':req.body.completed_date}, function (err, result) {
 		if (err !== null) {
 			console.log(err);
-			res.send("Error");
+			res.send(result);
 			return false;
 		} else {
 			console.log(result);		
-			res.send("Success");			
+			res.sendStatus(result);			
 		};
 	});
+	*/
+	ToDo.find({'_id':req.body._id}, function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			res.send(result);
+			return false;
+		} else {
+			console.log(result);		
+			res.sendStatus(result);			
+		};
+	});
+	/*
+	ToDo.find({'_id':req.body._id}, function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			res.send(result);
+			return false;
+		} else {
+			console.log('todo to remove: ' + result);		
+			//res.send(result);			
+			result.update({'_id':req.body._id}, {'completed_date':req.body.completed_date}, function (err, result2) {
+				if (err !== null) {
+					console.log(err);
+					res.send(result2);
+					return false;
+				} else {
+					console.log('update result: ' + result2);		
+					res.send(result2);			
+				};
+			});
+		};
+	});
+	*/
 });
 
 server.get("/todos.json", urlencodedParser, function (req, res) {
