@@ -193,8 +193,8 @@ var todos = function() {
 	displayTodos = function() {
 		console.log("displayTodos");
 		printTodos();
-		$(".todos").fadeOut();
-		$(".completedTodos").fadeOut();				
+		//$(".todos").fadeOut();
+		//$(".completedTodos").fadeOut();				
 		if (todosList !== null) { //display todosList
 			console.log("displaying todosList");
 			todosList.forEach(function(todo){
@@ -208,8 +208,8 @@ var todos = function() {
 				$(".completedTodos").append(todo);
 			});
 		};	
-		$(".todos").fadeIn();
-		$(".completedTodos").fadeIn();				
+		//$(".todos").fadeIn();
+		//$(".completedTodos").fadeIn();				
 	};
 	
 	manageCookies = function() {
@@ -311,29 +311,31 @@ var todos = function() {
 		displayTodos();
 	};
 	
-	addTodo = function(completed_todo) {
+	addTodo = function(completed_todo_str, mongo_id) {
 		var add_response;
-		if ($(".todoInput input").val() !== "" || completed_todo !== "") {
+		if ($(".todoInput input").val() !== "" || completed_todo_str !== "") {
 			if ($(".todoInput input").val() !== "") {
 				todoStr = $(".todoInput input").val();
 			} else {
-				todoStr = completed_todo;
+				todoStr = completed_todo_str;
 			};
 			
 			$divTodo = $("<div></div>");
 			$divTodo.attr('id',sequenceInt);
-
-			$.post("addTodo", {'email':userEmail, 'description':todoStr, 'created_date':new Date()}, function (response) {
-				console.log("addTodo response: " + JSON.stringify(response));
-				add_response = response;
-			})
-				.error(function(){
+			
+			if (completed_todo_str === "") {
+				$.post("addTodo", {'email':userEmail, 'description':todoStr, 'created_date':new Date()}, function (response) {
+					console.log("addTodo response: " + JSON.stringify(response));
+					add_response = response;
 				})
-				.done(function(){
-				  console.log('id for added todo: ' + add_response._id);
-					$divTodo.attr('data-mongoid',add_response._id);
-				})
-			;					
+					.error(function(){
+					})
+					.done(function(){
+						console.log('id for added todo: ' + add_response._id);
+						$divTodo.attr('data-mongoid',add_response._id);
+					})
+				;					
+			};
 			
 			$cbTodo = $("<input type='checkbox'>");			
 			$cbTodo.attr('vertical-align', 'bottom');
@@ -348,10 +350,11 @@ var todos = function() {
 			$divTodo.append($cbTodo);
 			$divTodo.append($labelTodo);
 
-			if (completed_todo !== "") {
+			if (completed_todo_str !== "") {
 				$cbTodo.attr('disabled', 'disabled');
 				$cbTodo.attr('checked', 'checked');
 				$labelTodo.css({'color':'gray'});
+				$divTodo.attr('data-mongoid', mongo_id);
 				completedTodosList.push($divTodo);
 				$(".completedTodos").append($divTodo);
 				boolCompletedTodos = true;
@@ -392,7 +395,7 @@ var todos = function() {
 		var 
 			array_index = -1,
 			remove_index = -1,
-			completed_todo,
+			completed_todo_str,
 			todo_div,
 			todo;
 		console.log("removing id: " + id_int);
@@ -400,13 +403,13 @@ var todos = function() {
 			array_index++;
 			if (todo_div.attr("id") === id_int) {
 				todo = todo_div;
-				completed_todo = todo_div.find('label').text().substring(1);
+				completed_todo_str = todo_div.find('label').text().substring(1);
 				remove_index = array_index;
 				console.log("array index to remove: " + remove_index);
 			}
 		});
 		todosList.splice(remove_index,1);
-		addTodo(completed_todo); //method overloading
+		addTodo(completed_todo_str, todo.data('mongoid')); //method overloading
 
 		console.log('todo id to remove: ' + todo.data('mongoid'));
 		$.post("removeTodo", {"_id":todo.data('mongoid'), "completed_date":new Date()}, function (response) {
@@ -485,7 +488,6 @@ var todos = function() {
 						boolLoggedIn = true;
 						manageCookies();
 						initializeLandingPage();
-						setupSectionUser();
 					};
 				})
 			;		

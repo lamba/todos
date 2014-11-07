@@ -119,16 +119,34 @@ server.post("/removeTodo", urlencodedParser, function (req, res) {
 		};
 	});
 	*/
-	ToDo.find({'_id':req.body._id}, function (err, result) {
+	
+	ToDo.findOne({'_id':req.body._id}, function (err, result) {
 		if (err !== null) {
 			console.log(err);
 			res.send(result);
 			return false;
 		} else {
 			console.log(result);		
-			res.sendStatus(result);			
+			result.completed_date = req.body.completed_date;
+			result.save();
+			res.send(result);			
 		};
 	});
+	
+	/*
+	ToDo.find({'_id':req.body._id}, function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			res.send(result);
+			return false;
+		} else {
+			console.log(result);
+			result.completed_date = req.body.completed_date;
+			//result.save();
+			res.send(result);			
+		};
+	});
+	*/
 	/*
 	ToDo.find({'_id':req.body._id}, function (err, result) {
 		if (err !== null) {
