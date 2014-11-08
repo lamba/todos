@@ -102,7 +102,12 @@ var todos = function() {
 		getTodos,
 		displayTodos,
 		updateAnonymousTodos,
-		buildListsFromSavedTodos;
+		buildListsFromSavedTodos,
+		registerEncrypted,
+		loginEncrypted,
+		register,
+		login,
+		getTodosJSON;
 		
 	//Event handlers
 	registerLandingPageEvents = function(){
@@ -141,11 +146,11 @@ var todos = function() {
 	
 	registerLoginPageEvents = function(){
 		$("button.register").on("click", function(event){
-			registerUser();
+			register();
 		});
 		
 		$("button.login").on("click", function(event){
-			loginUser();
+			login();
 		});			
 
 		$("#cbRememberMe").on('click', function(event){
@@ -178,11 +183,31 @@ var todos = function() {
 		//});	
 	};
 	
+	getTodosJSON = function() {
+		var dfd = new $.Deferred();
+		console.log("getTodos");
+		//was calling todos.json
+		$.get("todos.json", {'email':userEmail}, function (response) {
+		})
+			.done(function(response){
+				console.log("getTodos done");
+				console.log("sorted_todos.json response: " + JSON.stringify(response));
+				savedTodos = response;
+				dfd.resolve();
+			});
+		/*
+		$.post('getTodos', {'email':userEmail}, function (response) {
+			console.log("getTodos response: " + JSON.stringify(response));
+		});
+		*/		
+		return dfd.promise(); //return the promise, awaiting resolve
+	};
+	
 	getTodos = function() {
 		var dfd = new $.Deferred();
 		console.log("getTodos");
 		//was calling todos.json
-		$.get('sorted_todos.json', {'email':userEmail}, function (response) {
+		$.post("getTodos", {'email':userEmail}, function (response) {
 		})
 			.done(function(response){
 				console.log("getTodos done");
@@ -294,7 +319,7 @@ var todos = function() {
 		$pAppTodos = $("<p id='app-todos'>" 
 			+ "<li>Add a test framework and suite of tests"
 			+	"<li>Improve responsive design"
-			+	"<li>Skip images wider than 300 pixels"
+			+	"<li>Leverage HTML5 History API"
 			+	"<li>Add persistence (Mongo)"
 			+	"<li>Add authentication and authorization"
 			+	"<li>Make 'show history' configurable"
@@ -543,6 +568,22 @@ var todos = function() {
 		registerLoginPageEvents();
 		$("#inputEmail").focus();
 	};
+
+	login = function() {
+		if ($("#inputEmail").val().indexOf("email.com") === -1) {
+			loginEncrypted();
+		} else {
+			loginUser();				
+		};
+	};
+
+	register = function() {
+		if ($("#inputEmail").val().indexOf("email.com") === -1) {
+			registerEncrypted();
+		} else {
+			registerUser();				
+		};
+	};
 	
 	loginUser = function(){
 		console.log("loginUser");
@@ -550,6 +591,43 @@ var todos = function() {
 		if ($("#inputEmail").val() !== "" && $("#inputPassword").val() !== "") {
 			$.post("login", {"email":$("#inputEmail").val(), "password":$("#inputPassword").val()}, function (response) {
 				console.log("loginUser response: " + response);
+				if (response.indexOf("Success") === -1) {
+					boolLoggedIn = false;
+					$labelLoginPageErrorMessage.text(response);
+				};
+			})
+				.error(function(){
+					boolLoggedIn = false;
+					console.log("login request failed");
+					$labelLoginErrorMessage.text(response);
+				})
+				.done(function(){
+					console.log("login request completed");
+					if ((userEmail !== 'Anonymous') && (userEmail !== $("#inputEmail").val())) {
+						todosList = [];
+						completedTodosList = [];
+						$(".todos").empty();
+					}; 
+					userEmail = $("#inputEmail").val();
+					if ($labelLoginPageErrorMessage.text() === "") {
+						boolLoggedIn = true;
+						manageCookies();
+						initializeLandingPage();
+					};
+				})
+			;		
+		} else {
+			boolLoggedIn = false;
+			$labelLoginPageErrorMessage.text("Supply both email and password");
+		};
+	};
+	
+	loginEncrypted = function(){
+		console.log("loginEncrypted");
+		$labelLoginPageErrorMessage.text("");
+		if ($("#inputEmail").val() !== "" && $("#inputPassword").val() !== "") {
+			$.post("loginEncrypted", {"email":$("#inputEmail").val(), "password":$("#inputPassword").val()}, function (response) {
+				console.log("loginEncrypted response: " + response);
 				if (response.indexOf("Success") === -1) {
 					boolLoggedIn = false;
 					$labelLoginPageErrorMessage.text(response);
@@ -609,7 +687,43 @@ var todos = function() {
 						boolLoggedIn = true;
 						manageCookies();
 						initializeLandingPage();
-						setupSectionUser();
+					};
+				})
+			;		
+		} else {
+			boolLoggedIn = false;
+			$labelLoginPageErrorMessage.text("Supply both email and password");
+		};
+	};
+	
+	registerEncrypted = function(){
+		console.log("registerEncrypted");
+		$labelLoginPageErrorMessage.text("");
+		if ($("#inputEmail").val() !== "" && $("#inputPassword").val() !== "") {
+			$.post("registerEncrypted", {"email":$("#inputEmail").val(), "password":$("#inputPassword").val()}, function (response) {
+				console.log("registerEncrypted response: " + response);
+				if (response.indexOf("duplicate key error") > -1) {
+					boolLoggedIn = false;
+					$labelLoginPageErrorMessage.text("This email is already registered");
+				};
+			})
+				.error(function(){
+					boolLoggedIn = false;
+					console.log("registration request failed");
+					$labelLoginErrorMessage.text(response);
+				})
+				.done(function(){
+					console.log("registration request completed");
+					if ((userEmail !== 'Anonymous') && (userEmail !== $("#inputEmail").val())) {
+						todosList = [];
+						completedTodosList = [];
+						$(".todos").empty();
+					}; 
+					userEmail = $("#inputEmail").val();
+					if ($labelLoginPageErrorMessage.text() === "") {
+						boolLoggedIn = true;
+						manageCookies();
+						initializeLandingPage();
 					};
 				})
 			;		

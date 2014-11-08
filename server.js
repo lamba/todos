@@ -24,6 +24,7 @@ mongoose = require("mongoose");
 passport = require("passport");
 LocalStrategy = require("passport-local").Strategy;
 cookieParser = require("cookie-parser");
+bcrypt = require("bcrypt-nodejs");
 port = 80;
 server = express();
 
@@ -201,6 +202,12 @@ server.get("/sorted_todos.json", urlencodedParser, function (req, res) {
 	});
 });
 
+server.post("/getTodos", urlencodedParser, function (req, res) {
+	ToDo.find({'email':req.query.email.toLowerCase()}).sort({created_date:'ascending'}).exec(function (err, todosList) {
+		res.json(todosList);
+	});
+});
+
 //use http://localhost/alltodos.json
 server.get("/alltodos.json", urlencodedParser, function (req, res) {
 	ToDo.find({}, function (err, todosList) {
@@ -246,6 +253,24 @@ server.post("/users", urlencodedParser, function (req, res) {
 	});
 });
 
+server.post("/registerEncrypted", urlencodedParser, function (req, res) {
+	console.log("/registerEncrypted request: " + req.body);
+	var newUser = new User({
+		"email":req.body.email.toLowerCase(),
+		"password":bcrypt.hashSync(req.body.password)
+	});
+	newUser.save( function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			res.send("Error: " + err);
+			return false;
+		} else {
+			res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
+			res.send("Success");			
+		};
+	});
+});
+
 server.get("/cookies", urlencodedParser, function (req, res) {
 	console.log("/cookies request: " + req.body);
 	res.send(req.Cookies);
@@ -263,6 +288,40 @@ server.post("/login", urlencodedParser, function (req, res) {
 			console.log("email:" + user.email + ", password: " + user.password);
 		};
 		if (req.body.password === user.password) {
+			user.update({last_login_date:new Date()}, function(update_err, result) {
+				if (update_err !== null) {
+					console.log(update_err);
+					res.send("Error: " + update_err);
+					return false;
+				} else {
+					console.log("Updated last login for user: " + user.email + ", Result: " + result);
+				};			
+			});
+			//only seems to work if httpOnly is explicitly set
+			//browser/jquery only sees it is httpOnly:false
+			//maxAge is in milliseconds 60*60*1,000 = 3,600,000
+			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
+			res.send("Success");
+		} else {
+			console.log("Invalid password");
+			res.send("Invalid password");		
+			return false;
+		};
+	});
+});
+
+server.post("/loginEncrypted", urlencodedParser, function (req, res) {
+	console.log("/loginEncrypted request: " + req.body);
+	console.log("cookies: " + req.Cookies);
+	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
+		if (!user) {
+			console.log(err);
+			res.send("Invalid email");
+			return false;
+		} else {
+			console.log("email:" + user.email + ", password: " + user.password);
+		};
+		if (bcrypt.compareSync(req.body.password, user.password)) {
 			user.update({last_login_date:new Date()}, function(update_err, result) {
 				if (update_err !== null) {
 					console.log(update_err);
