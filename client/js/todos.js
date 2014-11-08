@@ -186,7 +186,7 @@ var todos = function() {
 		})
 			.done(function(response){
 				console.log("getTodos done");
-				console.log("todos.json response: " + JSON.stringify(response));
+				console.log("sorted_todos.json response: " + JSON.stringify(response));
 				savedTodos = response;
 				dfd.resolve();
 			});
@@ -320,8 +320,8 @@ var todos = function() {
 		//use promises/deferreds to sequence
 		$.when(updateAnonymousTodos())
 			.then(getTodos)
-			.then(buildListsFromSavedTodos); 
-		displayTodos();
+			.then(buildListsFromSavedTodos) 
+			.then(displayTodos);
 	};
 	
 	addTodo = function(completed_todo_str, mongo_id) {
@@ -405,21 +405,41 @@ var todos = function() {
 	};
 
 	buildListsFromSavedTodos = function() {
-		console.log("buildListsFromSavedTodos")
+		var dfd = new $.Deferred();
+		console.log("buildListsFromSavedTodos");
+		todosList = [];
+		completedTodosList = [];
 		if (savedTodos !== undefined) {
 			console.log("savedTodos:" + savedTodos);
 			$.each(savedTodos, function(key, value) {
 				console.log(JSON.stringify(key) + ":" + JSON.stringify(value));
+				todoStr = value['description'];
+				$divTodo = $("<div></div>");
+				$divTodo.attr('data-mongoid',value['_id']);
+				$cbTodo = $("<input type='checkbox'>");			
+				$cbTodo.attr('vertical-align', 'bottom');			
+				$labelTodo = $("<label>");
+				$labelTodo.text(" " + todoStr);
+				$h1Separator = $("<h1></h1>");
+				$divTodo.append($cbTodo);
+				$divTodo.append($labelTodo);
+
 				if (!value.hasOwnProperty('completed_date')) {
 					console.log("active todo found");
+					todosList.push($divTodo);
 				} else {
 					console.log("completed todo found");
+					$cbTodo.attr('disabled', 'disabled');
+					$cbTodo.attr('checked', 'checked');
+					$labelTodo.css({'color':'gray'});
+					completedTodosList.push($divTodo);
 				};
 			});			
 		} else {
 			console.log("savedTodos is undefined!");
 		};
-
+		dfd.resolve();
+		return dfd.promise();
 	};
 	
 	removeTodo = function(id_int) {
