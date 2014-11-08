@@ -181,7 +181,8 @@ var todos = function() {
 	getTodos = function() {
 		var dfd = new $.Deferred();
 		console.log("getTodos");
-		$.get('todos.json', {'email':userEmail}, function (response) {
+		//was calling todos.json
+		$.get('sorted_todos.json', {'email':userEmail}, function (response) {
 		})
 			.done(function(response){
 				console.log("getTodos done");
@@ -409,7 +410,7 @@ var todos = function() {
 			console.log("savedTodos:" + savedTodos);
 			$.each(savedTodos, function(key, value) {
 				console.log(JSON.stringify(key) + ":" + JSON.stringify(value));
-				if (value['completed_date'] !== null) {
+				if (!value.hasOwnProperty('completed_date')) {
 					console.log("active todo found");
 				} else {
 					console.log("completed todo found");

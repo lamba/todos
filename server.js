@@ -195,6 +195,12 @@ server.get("/todos.json", urlencodedParser, function (req, res) {
 	});
 });
 
+server.get("/sorted_todos.json", urlencodedParser, function (req, res) {
+	ToDo.find({'email':req.query.email.toLowerCase()}).sort({created_date:'ascending'}).exec(function (err, todosList) {
+		res.json(todosList);
+	});
+});
+
 //use http://localhost/alltodos.json
 server.get("/alltodos.json", urlencodedParser, function (req, res) {
 	ToDo.find({}, function (err, todosList) {
