@@ -317,9 +317,9 @@ var todos = function() {
 
 		//if there are any todos (todosList) mapped to "anonymous", update email to logged in user's email
 		//use promises/deferreds to sequence
-		updateAnonymousTodos()
-			.done(getTodos)
-			.done(buildListsFromSavedTodos); 
+		$.when(updateAnonymousTodos())
+			.then(getTodos)
+			.then(buildListsFromSavedTodos); 
 		displayTodos();
 	};
 	
@@ -409,6 +409,11 @@ var todos = function() {
 			console.log("savedTodos:" + savedTodos);
 			$.each(savedTodos, function(key, value) {
 				console.log(JSON.stringify(key) + ":" + JSON.stringify(value));
+				if (value['completed_date'] !== null) {
+					console.log("active todo found");
+				} else {
+					console.log("completed todo found");
+				};
 			});			
 		} else {
 			console.log("savedTodos is undefined!");
