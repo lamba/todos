@@ -180,9 +180,11 @@ server.post("/updateAnonymousTodo", urlencodedParser, function (req, res) {
 			return false;
 		} else {
 			console.log(result);		
-			result.email = req.body.email;
-			result.save();
-			res.send(result);			
+			if (result !== null) {
+				result.email = req.body.email;
+				result.save();
+				res.send(result);			
+			};
 		};
 	});
 });

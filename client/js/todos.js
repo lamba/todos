@@ -179,16 +179,22 @@ var todos = function() {
 	};
 	
 	getTodos = function() {
+		var dfd = new $.Deferred();
 		console.log("getTodos");
 		$.get('todos.json', {'email':userEmail}, function (response) {
-			console.log("todos.json response: " + JSON.stringify(response));
-			savedTodos = response;
-		});
+		})
+			.done(function(response){
+				console.log("getTodos done");
+				console.log("todos.json response: " + JSON.stringify(response));
+				savedTodos = response;
+				dfd.resolve();
+			});
 		/*
 		$.post('getTodos', {'email':userEmail}, function (response) {
 			console.log("getTodos response: " + JSON.stringify(response));
 		});
 		*/		
+		return dfd.promise(); //return the promise, awaiting resolve
 	};
 	
 	displayTodos = function() {
@@ -309,8 +315,11 @@ var todos = function() {
 		registerLandingPageEvents();
 		$(".todoInput input").focus();
 
-		updateAnonymousTodos(); //if there are any todos (todosList) mapped to "anonymous", update email to logged in user's email
-		getTodos();
+		//if there are any todos (todosList) mapped to "anonymous", update email to logged in user's email
+		//use promises/deferreds to sequence
+		updateAnonymousTodos()
+			.done(getTodos)
+			.done(buildListsFromSavedTodos); 
 		displayTodos();
 	};
 	
@@ -395,7 +404,16 @@ var todos = function() {
 	};
 
 	buildListsFromSavedTodos = function() {
-		
+		console.log("buildListsFromSavedTodos")
+		if (savedTodos !== undefined) {
+			console.log("savedTodos:" + savedTodos);
+			$.each(savedTodos, function(key, value) {
+				console.log(JSON.stringify(key) + ":" + JSON.stringify(value));
+			});			
+		} else {
+			console.log("savedTodos is undefined!");
+		};
+
 	};
 	
 	removeTodo = function(id_int) {
@@ -425,17 +443,31 @@ var todos = function() {
 	};
 	
 	updateAnonymousTodos = function() {
+		var promises = [];
 		console.log("updateAnonymousTodos");
 		todosList.forEach(function(todo_div) {
+			var dfd = new $.Deferred();
 			$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
-				console.log("updateAnonymousTodo response: " + JSON.stringify(response));
-			});		
+			})		
+				.done(function(response){
+					console.log("updateAnonymousTodos done");					
+					console.log("updateAnonymousTodo response: " + JSON.stringify(response));
+					dfd.resolve();
+				});		
+			promises.push(dfd);
 		});
 		completedTodosList.forEach(function(todo_div) {
+			var dfd = new $.Deferred();
 			$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
-				console.log("updateAnonymousTodo response: " + JSON.stringify(response));
-			});		
+			})
+				.done(function(response){
+					console.log("updateAnonymousTodos done");					
+					console.log("updateAnonymousTodo response: " + JSON.stringify(response));
+					dfd.resolve();
+				});		
+			promises.push(dfd);
 		});
+		return $.when.apply(undefined, promises).promise(); //return promise, awaiting resolve
 	};
 	
 	initializeLoginPage = function() {
