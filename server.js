@@ -171,6 +171,22 @@ server.post("/removeTodo", urlencodedParser, function (req, res) {
 	*/
 });
 
+server.post("/updateAnonymousTodo", urlencodedParser, function (req, res) {
+	console.log("/updateAnonymousTodo request: " + JSON.stringify(req.body));
+	ToDo.findOne({'_id':req.body._id}, function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			res.send(result);
+			return false;
+		} else {
+			console.log(result);		
+			result.email = req.body.email;
+			result.save();
+			res.send(result);			
+		};
+	});
+});
+
 server.get("/todos.json", urlencodedParser, function (req, res) {
 	ToDo.find({'email':req.query.email.toLowerCase()}, function (err, todosList) {
 		res.json(todosList);

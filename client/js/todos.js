@@ -54,8 +54,7 @@ var todos = function() {
 		$sectionAbout,
 		
 		//landing page widgets
-		$labelWelcome,
-		$buttonLoginPage,
+		$labelWelcome,		$buttonLoginPage,
 		$labelOr,
 		$buttonRegisterPage,
 		$cbShowHistory,
@@ -90,7 +89,7 @@ var todos = function() {
 		getCookies,
 		addTodo,
 		printTodos,
-		removeFromTodos,
+		removeTodo,
 		initializeLandingPage,
 		registerLandingPageEvents,
 		getPhotos,
@@ -101,7 +100,9 @@ var todos = function() {
 		registerLoginPageEvents,
 		manageCookies,
 		getTodos,
-		displayTodos;
+		displayTodos,
+		updateAnonymousTodos,
+		buildListsFromSavedTodos;
 		
 	//Event handlers
 	registerLandingPageEvents = function(){
@@ -123,7 +124,7 @@ var todos = function() {
 		$(".todos").on('change', 'input[type=checkbox]', function(event){
 			idInt = $(event.target).parent().attr("id");
 			$(event.target).parent().fadeOut().remove();
-			removeFromTodos(idInt);
+			removeTodo(idInt);
 			printTodos();		
 			$("#inputTodo").focus();
 		});
@@ -195,13 +196,13 @@ var todos = function() {
 		printTodos();
 		//$(".todos").fadeOut();
 		//$(".completedTodos").fadeOut();				
-		if (todosList !== null) { //display todosList
+		if (todosList.length > 0) { //display todosList
 			console.log("displaying todosList");
 			todosList.forEach(function(todo){
 				$(".todos").append(todo);
 			});
 		};
-		if (completedTodosList !== null) {
+		if (completedTodosList.length > 0) {
 			$(".todos").append($h1Separator);
 			console.log("displaying completedTodosList");
 			completedTodosList.forEach(function(todo){
@@ -307,6 +308,8 @@ var todos = function() {
 		
 		registerLandingPageEvents();
 		$(".todoInput input").focus();
+
+		updateAnonymousTodos(); //if there are any todos (todosList) mapped to "anonymous", update email to logged in user's email
 		getTodos();
 		displayTodos();
 	};
@@ -390,8 +393,12 @@ var todos = function() {
 		});
 		console.log("completed todos:" + completedTodosStr);
 	};
+
+	buildListsFromSavedTodos = function() {
+		
+	};
 	
-	removeFromTodos = function(id_int) {
+	removeTodo = function(id_int) {
 		var 
 			array_index = -1,
 			remove_index = -1,
@@ -415,6 +422,20 @@ var todos = function() {
 		$.post("removeTodo", {"_id":todo.data('mongoid'), "completed_date":new Date()}, function (response) {
 			console.log("removeTodo response: " + JSON.stringify(response));
 		});		
+	};
+	
+	updateAnonymousTodos = function() {
+		console.log("updateAnonymousTodos");
+		todosList.forEach(function(todo_div) {
+			$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
+				console.log("updateAnonymousTodo response: " + JSON.stringify(response));
+			});		
+		});
+		completedTodosList.forEach(function(todo_div) {
+			$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
+				console.log("updateAnonymousTodo response: " + JSON.stringify(response));
+			});		
+		});
 	};
 	
 	initializeLoginPage = function() {
@@ -483,6 +504,11 @@ var todos = function() {
 				})
 				.done(function(){
 					console.log("login request completed");
+					if ((userEmail !== 'Anonymous') && (userEmail !== $("#inputEmail").val())) {
+						todosList = [];
+						completedTodosList = [];
+						$(".todos").empty();
+					}; 
 					userEmail = $("#inputEmail").val();
 					if ($labelLoginPageErrorMessage.text() === "") {
 						boolLoggedIn = true;
@@ -515,6 +541,11 @@ var todos = function() {
 				})
 				.done(function(){
 					console.log("registration request completed");
+					if ((userEmail !== 'Anonymous') && (userEmail !== $("#inputEmail").val())) {
+						todosList = [];
+						completedTodosList = [];
+						$(".todos").empty();
+					}; 
 					userEmail = $("#inputEmail").val();
 					if ($labelLoginPageErrorMessage.text() === "") {
 						boolLoggedIn = true;
