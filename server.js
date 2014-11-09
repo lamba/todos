@@ -14,7 +14,8 @@ var
 	loginErrorMessage,
 	cookieParser,
   port,
-	server;
+	server,
+	mongoURI;
 
 //link required node.js modules  
 express = require("express");	
@@ -26,12 +27,14 @@ LocalStrategy = require("passport-local").Strategy;
 cookieParser = require("cookie-parser");
 bcrypt = require("bcrypt-nodejs");
 port = 80;
+mongoURI = 'mongodb://localhost/test';
 server = express();
 
 server.use(express.static(__dirname + "/client"));
 server.use(cookieParser());
 
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect(process.env.MONGOLAB_URI || mongoURI);
+console.log("Connected to Mongo on URI " + (process.env.MONGOLAB_URI || mongoURI));
 
 Schema = mongoose.Schema;
 
@@ -194,7 +197,7 @@ server.get("/todos.json", urlencodedParser, function (req, res) {
 	ToDo.find({'email':req.query.email.toLowerCase()}, function (err, todosList) {
 		res.json(todosList);
 	});
-});
+}); 
 
 server.get("/sorted_todos.json", urlencodedParser, function (req, res) {
 	ToDo.find({'email':req.query.email.toLowerCase()}).sort({created_date:'ascending'}).exec(function (err, todosList) {
@@ -202,8 +205,8 @@ server.get("/sorted_todos.json", urlencodedParser, function (req, res) {
 	});
 });
 
-server.post("/getTodos", urlencodedParser, function (req, res) {
-	ToDo.find({'email':req.query.email.toLowerCase()}).sort({created_date:'ascending'}).exec(function (err, todosList) {
+server.post("/getTodosSorted", urlencodedParser, function (req, res) {
+	ToDo.find({'email':req.body.email.toLowerCase()}).sort('created_date').find(function (err, todosList) {
 		res.json(todosList);
 	});
 });

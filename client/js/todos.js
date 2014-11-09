@@ -185,13 +185,13 @@ var todos = function() {
 	
 	getTodosJSON = function() {
 		var dfd = new $.Deferred();
-		console.log("getTodos");
+		console.log("getTodosJSON");
 		//was calling todos.json
 		$.get("todos.json", {'email':userEmail}, function (response) {
 		})
 			.done(function(response){
-				console.log("getTodos done");
-				console.log("sorted_todos.json response: " + JSON.stringify(response));
+				console.log("getTodosJSON done");
+				console.log("getTodosJSON response: " + JSON.stringify(response));
 				savedTodos = response;
 				dfd.resolve();
 			});
@@ -205,13 +205,14 @@ var todos = function() {
 	
 	getTodos = function() {
 		var dfd = new $.Deferred();
-		console.log("getTodos");
+		console.log("getTodosSorted");
 		//was calling todos.json
-		$.post("getTodos", {'email':userEmail}, function (response) {
+		console.log("userEmail:" + userEmail);
+		$.post("getTodosSorted", {'email':userEmail}, function (response) {
 		})
 			.done(function(response){
-				console.log("getTodos done");
-				console.log("sorted_todos.json response: " + JSON.stringify(response));
+				console.log("getTodosSorted done");
+				console.log("getTodosSorted response: " + JSON.stringify(response));
 				savedTodos = response;
 				dfd.resolve();
 			});
@@ -320,9 +321,9 @@ var todos = function() {
 			+ "<li>Add a test framework and suite of tests"
 			+	"<li>Improve responsive design"
 			+	"<li>Leverage HTML5 History API"
-			+	"<li>Add persistence (Mongo)"
-			+	"<li>Add authentication and authorization"
+			+	"<li>Manage content overflow"
 			+	"<li>Make 'show history' configurable"
+			+	"<li>Allow inline editing of todos"
 			+ "</p>");
 		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
 			
@@ -529,7 +530,7 @@ var todos = function() {
 		
 		$inputEmail = $("<input type='text' id='inputEmail' maxlength='35'></input>");
 		$labelEmail = $("<label id='labelEmail'>Email</label><br>");
-		$inputPassword = $("<input type='text' id='inputPassword' maxlength='35'></input>");
+		$inputPassword = $("<input type='password' id='inputPassword' maxlength='35'></input>");
 		$labelPassword = $("<label id='labelPassword'>Password</label><br>");
 		$cbRememberMe = $("<input type='checkbox' id='cbRememberMe'>");
 		$labelRememberMe = $("<label id='labelRememberMe'>Remember Email</label><br>");
