@@ -15,7 +15,13 @@ var
 	cookieParser,
   port,
 	server,
-	mongoURI;
+	mongoURI,
+	nodemailer,
+	transporter,
+	mailOptions,
+
+	//functions
+	sendEmail;
 
 //link required node.js modules  
 express = require("express");	
@@ -26,6 +32,12 @@ passport = require("passport");
 LocalStrategy = require("passport-local").Strategy;
 cookieParser = require("cookie-parser");
 bcrypt = require("bcrypt-nodejs");
+nodemailer = require("nodemailer");
+
+transporter = nodemailer.createTransport('direct', {
+	debug:true
+});
+
 port = 80;
 mongoURI = 'mongodb://localhost/test';
 server = express();
@@ -33,8 +45,13 @@ server = express();
 server.use(express.static(__dirname + "/client"));
 server.use(cookieParser());
 
-mongoose.connect(process.env.MONGOLAB_URI || mongoURI);
-console.log("Connected to Mongo on URI " + (process.env.MONGOLAB_URI || mongoURI));
+mongoose.connect(process.env.MONGOLAB_URI || mongoURI, function(err) {
+	if (err) {
+		throw err;
+	} else {
+		console.log("Connected to Mongo on URI " + (process.env.MONGOLAB_URI || mongoURI));
+	};
+});
 
 Schema = mongoose.Schema;
 
@@ -240,6 +257,11 @@ server.post("/addTodo", urlencodedParser, function (req, res) {
 
 server.post("/users", urlencodedParser, function (req, res) {
 	console.log("/users request: " + req.body);
+	if (!sendEmail(req.body.email.toLowerCase())) {
+		console.log('Invalid email');
+		res.send("Error: Invalid email");
+		return false;
+	};
 	var newUser = new User({
 		"email":req.body.email.toLowerCase(),
 		"password":req.body.password
@@ -256,8 +278,38 @@ server.post("/users", urlencodedParser, function (req, res) {
 	});
 });
 
+sendEmail = function (email) {
+	console.log('sendEmail');
+	return true;
+	//var atPos = email.indexOf('@');
+  //var dotPos = email.lastIndexOf('.');
+  //return (atPos > 0 && atPos < dotPos && email.indexOf('@@') === -1 && dotPos > 2 && (email.length - dotPos) > 2);
+  /*
+  mailOptions = {
+    from: 'pslamba@gmail.com',
+    to: email,
+    subject: 'lamba-todos registration code',
+    text: 'Please enter this code on the registration page to complete your registration: ' + ''
+	};
+  transporter.sendMail(mailOptions, function(error, info) {
+  	if (error) {
+  		console.log(error);
+  		return false;
+  	} else {
+  		console.log(info.response);
+  		return true;
+  	};
+  });
+	*/
+};
+
 server.post("/registerEncrypted", urlencodedParser, function (req, res) {
 	console.log("/registerEncrypted request: " + req.body);
+	if (!sendEmail(req.body.email.toLowerCase())) {
+		console.log('Could not send email to confirm registration');
+		res.send("Error: Could not send email to confirm registration");
+		return false;
+	};
 	var newUser = new User({
 		"email":req.body.email.toLowerCase(),
 		"password":bcrypt.hashSync(req.body.password)
@@ -282,6 +334,11 @@ server.get("/cookies", urlencodedParser, function (req, res) {
 server.post("/login", urlencodedParser, function (req, res) {
 	console.log("/login request: " + req.body);
 	console.log("cookies: " + req.Cookies);
+	if (!sendEmail(req.body.email.toLowerCase())) {
+		console.log('Invalid email');
+		res.send("Error: Invalid email");
+		return false;
+	};
 	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) {
 			console.log(err);
@@ -316,6 +373,11 @@ server.post("/login", urlencodedParser, function (req, res) {
 server.post("/loginEncrypted", urlencodedParser, function (req, res) {
 	console.log("/loginEncrypted request: " + req.body);
 	console.log("cookies: " + req.Cookies);
+	if (!sendEmail(req.body.email.toLowerCase())) {
+		console.log('Invalid email');
+		res.send("Error: Invalid email");
+		return false;
+	};
 	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) {
 			console.log(err);

@@ -33,7 +33,7 @@ var todos = function() {
 		completedTodosStr,
 		todoStr,
 		idInt,
-		sequenceInt=0,
+		sequenceInt=0, //used for tracking id on the client side, in the arrays
 		boolCompletedTodos=false,
 		boolShowHistory,
 		userEmail = "Anonymous",
@@ -129,7 +129,7 @@ var todos = function() {
 		$(".todos").on('change', 'input[type=checkbox]', function(event){
 			idInt = $(event.target).parent().attr("id");
 			$(event.target).parent().fadeOut().remove();
-			removeTodo(idInt);
+			removeTodo(idInt);				
 			printTodos();		
 			$("#inputTodo").focus();
 		});
@@ -313,7 +313,7 @@ var todos = function() {
 		$sectionAbout = $("<section class='about'></section>");
 		$pAboutHeading = $("<p id='about-heading'>About This App</p>");
 		$pAbout = $("<p id='about'>" 
-			+ "This is v0.1.1 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, SSL, AJAX, JSON, Node.js & Mongo, "
+			+ "This is v0.1.2 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, SSL, AJAX, JSON, Node.js & Mongo, "
 			+ "deployed to the Heroku cloud PaaS (managed by Salesforce.com and based on Amazon's AWS)."
 			+ "</p>");
 		$pAppTodosHeading = $("<p id='app-todos-heading'>ToDos for this ToDos app (pun intended!)</p>");
@@ -349,7 +349,9 @@ var todos = function() {
 			.then(buildListsFromSavedTodos) 
 			.then(displayTodos);
 	};
-	
+
+	//if completed_todo_str is supplied, then removeTodo already marked the todo as completed in the db
+	//	i.e. add the completed todo to the completedTodosList array	and display it
 	addTodo = function(completed_todo_str, mongo_id) {
 		var add_response;
 		if ($(".todoInput input").val() !== "" || completed_todo_str !== "") {
@@ -442,6 +444,7 @@ var todos = function() {
 				todoStr = value['description'];
 				$divTodo = $("<div></div>");
 				$divTodo.attr('data-mongoid',value['_id']);
+				$divTodo.attr('id',value['_id']); // populate id as well, to keep event logic simple
 				$cbTodo = $("<input type='checkbox'>");			
 				$cbTodo.attr('vertical-align', 'bottom');			
 				$labelTodo = $("<label>");
@@ -486,12 +489,14 @@ var todos = function() {
 			}
 		});
 		todosList.splice(remove_index,1);
-		addTodo(completed_todo_str, todo.data('mongoid')); //method overloading
+
+		//use method overloading to add the removed todo as a completed todo to the array and display
+		addTodo(completed_todo_str, todo.data('mongoid'));
 
 		console.log('todo id to remove: ' + todo.data('mongoid'));
 		$.post("removeTodo", {"_id":todo.data('mongoid'), "completed_date":new Date()}, function (response) {
 			console.log("removeTodo response: " + JSON.stringify(response));
-		});		
+		});					
 	};
 	
 	updateAnonymousTodos = function() {
