@@ -291,7 +291,7 @@ var todos = function() {
 
 		$sectionTodoInput = $("<section class='todoInput'></section>");
 		$pAddTodo = $("<p class='app-title'>Add ToDo</p>");
-		$inputTodo = $("<input type='text' id='inputTodo' maxlength='35'>");
+		$inputTodo = $("<input type='text' id='inputTodo' maxlength='40'>");
 		$buttonAddTodo = ("<button id='addTodo'>+</button>");
 		$sectionTodoInput.append($pAddTodo);
 		$sectionTodoInput.append($inputTodo);
@@ -533,9 +533,9 @@ var todos = function() {
 		//$divLeft.fadeOut();
 		$divLeft.empty();
 		
-		$inputEmail = $("<input type='text' id='inputEmail' maxlength='35'></input>");
+		$inputEmail = $("<input type='text' id='inputEmail' maxlength='40'></input>");
 		$labelEmail = $("<label id='labelEmail'>Email</label><br>");
-		$inputPassword = $("<input type='password' id='inputPassword' maxlength='35'></input>");
+		$inputPassword = $("<input type='password' id='inputPassword' maxlength='40'></input>");
 		$labelPassword = $("<label id='labelPassword'>Password</label><br>");
 		$cbRememberMe = $("<input type='checkbox' id='cbRememberMe'>");
 		$labelRememberMe = $("<label id='labelRememberMe'>Remember Email</label><br>");
