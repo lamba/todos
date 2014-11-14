@@ -458,6 +458,7 @@ var todos = function() {
 					todosList.push($divTodo);
 				} else {
 					console.log("completed todo found");
+					boolCompletedTodos = true;
 					$cbTodo.attr('disabled', 'disabled');
 					$cbTodo.attr('checked', 'checked');
 					$labelTodo.css({'color':'gray'});
