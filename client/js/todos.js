@@ -534,9 +534,9 @@ var todos = function() {
 		//$divLeft.fadeOut();
 		$divLeft.empty();
 		
-		$inputEmail = $("<input type='text' id='inputEmail' maxlength='40'></input>");
+		$inputEmail = $("<input type='text' id='inputEmail' maxlength='40' style='width:12em'></input>");
 		$labelEmail = $("<label id='labelEmail'>Email</label><br>");
-		$inputPassword = $("<input type='password' id='inputPassword' maxlength='40'></input>");
+		$inputPassword = $("<input type='password' id='inputPassword' maxlength='40' style='width:12em'></input>");
 		$labelPassword = $("<label id='labelPassword'>Password</label><br>");
 		$cbRememberMe = $("<input type='checkbox' id='cbRememberMe'>");
 		$labelRememberMe = $("<label id='labelRememberMe'>Remember Email</label><br>");
