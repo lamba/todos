@@ -6,7 +6,7 @@ ol,ul,dl { list-style-position:inside; }
 /* Standard selectors */
 body { width:900px; margin:auto; height:100%; overflow:hidden;	background-color:#eee; font-size:125%; }
 section { position:relative; top:2em; left:2em; bottom:2em; right:2em; margin:1em; font-size:.8em; }
-a:enabled[href], input:enabled[type=checkbox], button:enabled { cursor:pointer; }
+a:enabled[href], input:enabled[type=checkbox], button:enabled, .icon-delete { cursor:pointer; }
 label { vertical-align:top; }
 #labelOr { vertical-align:bottom; }
 button { margin-left:.2em; width:3em; height:1.5em; line-height:1em; }

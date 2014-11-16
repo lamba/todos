@@ -40,7 +40,7 @@ var todos = function() {
 		boolRememberMe = false,
 		boolLoggedIn = false,
 		savedTodos,
-		
+				
 		//jQuery elements
 		//landing page containers
 		$divLeft,
@@ -76,6 +76,12 @@ var todos = function() {
 		$buttonLogout,
 		$iconDelete,
 		
+		//landing page widget definitions (for recurring elements)
+		$divTodoStr,
+		$labelTodoStr,
+		$cbTodoStr,
+		$iconDeleteStr,
+
 		//login/register page widgets
 		$inputEmail,
 		$labelEmail,
@@ -114,7 +120,56 @@ var todos = function() {
 		initElements;
 
 	initElements = function() {
-		
+		//Create base landing page elements	
+		$divLeft = $("<div class='left'></div>");		
+		$sectionUser = $("<section class='user'></section>");
+		$labelWelcome = $("<label id='welcome-label'>Welcome, </label>");
+		$buttonLoginPage = $("<button class='goToLoginPage'>Login</button>");
+		$labelOr = $("<label id='labelOr'> or </label>");
+		$buttonRegisterPage = $("<button class='goToLoginPage'>Register</button>");
+		$buttonLogout = $("<button id='buttonLogout'>Logout</button>");
+		$sectionPreferences = $("<section class='preferences'></section>");
+		$cbShowHistory = $("<input type='checkbox' class='cbShowHistory'>").prop('disabled', true);
+		$labelShowHistory = $("<label class='labelShowHistory'> Show History (Completed ToDos)</label>");
+		$sectionTodoInput = $("<section class='todoInput'></section>");
+		$pAddTodo = $("<p class='app-title'>Add ToDo</p>");
+		$inputTodo = $("<input type='text' id='inputTodo' maxlength='40'>");
+		$buttonAddTodo = ("<button id='addTodo'>+</button>");
+		$sectionTodos = ("<section class='todos'></section>");
+		$sectionCompletedTodos = ("<section class='completedTodos'></section>");
+	
+		$divRight = $("<div class='right'></div>");
+		$sectionPhotos = $("<section class='photos'></section>");				
+		$sectionAbout = $("<section class='about'></section>");
+		$pAboutHeading = $("<p id='about-heading'>About This App</p>");
+		$pAbout = $("<p id='about'>" 
+			+ "This is v0.1.3 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, SSL, AJAX, JSON, Node.js & Mongo, "
+			+ "deployed to the Heroku cloud PaaS (managed by Salesforce.com and based on Amazon's AWS)."
+			+ "</p>");
+		$pAppTodosHeading = $("<p id='app-todos-heading'>ToDos for this ToDos app (pun intended!)</p>");
+		$pAppTodos = $("<p id='app-todos'>" 
+			+ "<li>Add a test framework and suite of tests"
+			+	"<li>Improve responsive design"
+			+	"<li>Leverage HTML5 History API"
+			+	"<li>Manage content overflow"
+			+	"<li>Make 'show history' configurable"
+			+	"<li>Allow inline editing of todos"
+			+ "</p>");
+		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
+
+		//Create todo landing page elements
+		$divTodo = $("<div></div>");
+		$cbTodo = $("<input type='checkbox' id='cbTodo' title='Mark Completed'></input>");			
+		$cbTodo.attr('vertical-align', 'bottom');			
+		$labelTodo = $("<label></label>");
+		$h1Separator = $("<h1></h1>");
+		$iconDelete = $('<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>');
+
+		//Definitions for recurring elements that must be recreated on the fly
+		$divTodoStr = "<div></div>";
+		$labelTodoStr = "<label></label>";
+		$cbTodoStr = "<input type='checkbox' id='cbTodo' title='Mark Completed'></input>";
+		$iconDeleteStr = '<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>';
 	};
 
 	//Event handlers
@@ -172,7 +227,7 @@ var todos = function() {
 	};
 	
 	registerTodoEvents = function() {
-		console.log('init');
+		console.log('registerTodoEvents');
 		$(".icon-delete").on('mouseover', function() {
 				console.log('.icon-delete mouseover')
 				//$(this).addClass('ui-state-hover');
@@ -230,6 +285,8 @@ var todos = function() {
 	};
 	
 	getTodos = function() {
+		//note: when a todo is marked completed, it is simply added to the bottom of the display
+		//			but a new fetch from db returns in created order, not completed order
 		var dfd = new $.Deferred();
 		console.log("getTodosSorted");
 		//was calling todos.json
@@ -286,20 +343,12 @@ var todos = function() {
 		
 	initializeLandingPage = function() {
 		console.log("initializeLandingPage");
-		//getCookies();
-		$("body").empty();
-		
-		//Create landing page elements
-		$divLeft = $("<div class='left'></div>");
-		
-		$sectionUser = $("<section class='user'></section>");
-		$labelWelcome = $("<label id='welcome-label'>Welcome, </label>" + userEmail + "!<br>");
-		$buttonLoginPage = $("<button class='goToLoginPage'>Login</button>");
-		$labelOr = $("<label id='labelOr'> or </label>");
-		$buttonRegisterPage = $("<button class='goToLoginPage'>Register</button>");
-		$buttonLogout = $("<button id='buttonLogout'>Logout</button>");
+		initElements();
+		$("body").empty();		
+		$labelWelcome.append(userEmail + "!<br>");
 		
 		$sectionUser.append($labelWelcome);
+
 		if (boolLoggedIn === false) {
 			$sectionUser.append($buttonLoginPage);
 			$sectionUser.append($labelOr);
@@ -307,52 +356,20 @@ var todos = function() {
 		} else {
 			$sectionUser.append($buttonLogout);
 		};
-		//disableLoginRegister();
 		
-		$sectionPreferences = $("<section class='preferences'></section>");
-		$cbShowHistory = $("<input type='checkbox' class='cbShowHistory'>").prop('disabled', true);
-		$labelShowHistory = $("<label class='labelShowHistory'> Show History (Completed ToDos)</label>");
 		$sectionPreferences.append($cbShowHistory);
 		$sectionPreferences.append($labelShowHistory);
 
-		$sectionTodoInput = $("<section class='todoInput'></section>");
-		$pAddTodo = $("<p class='app-title'>Add ToDo</p>");
-		$inputTodo = $("<input type='text' id='inputTodo' maxlength='40'>");
-		$buttonAddTodo = ("<button id='addTodo'>+</button>");
 		$sectionTodoInput.append($pAddTodo);
 		$sectionTodoInput.append($inputTodo);
 		$sectionTodoInput.append($buttonAddTodo);
 		
-		$sectionTodos = ("<section class='todos'></section>");
-		$sectionCompletedTodos = ("<section class='completedTodos'></section>");
-
 		$divLeft.append($sectionUser);
 		$divLeft.append($sectionPreferences);
 		$divLeft.append($sectionTodoInput);
 		$divLeft.append($sectionTodos);
 		$divLeft.append($sectionCompletedTodos);
 		
-		$divRight = $("<div class='right'></div>");
-
-		$sectionPhotos = $("<section class='photos'></section>");				
-
-		$sectionAbout = $("<section class='about'></section>");
-		$pAboutHeading = $("<p id='about-heading'>About This App</p>");
-		$pAbout = $("<p id='about'>" 
-			+ "This is v0.1.2 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, SSL, AJAX, JSON, Node.js & Mongo, "
-			+ "deployed to the Heroku cloud PaaS (managed by Salesforce.com and based on Amazon's AWS)."
-			+ "</p>");
-		$pAppTodosHeading = $("<p id='app-todos-heading'>ToDos for this ToDos app (pun intended!)</p>");
-		$pAppTodos = $("<p id='app-todos'>" 
-			+ "<li>Add a test framework and suite of tests"
-			+	"<li>Improve responsive design"
-			+	"<li>Leverage HTML5 History API"
-			+	"<li>Manage content overflow"
-			+	"<li>Make 'show history' configurable"
-			+	"<li>Allow inline editing of todos"
-			+ "</p>");
-		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
-			
 		$sectionAbout.append($pAboutHeading);
 		$sectionAbout.append($pAbout);
 		$sectionAbout.append($pAppTodosHeading);
@@ -388,8 +405,8 @@ var todos = function() {
 			} else {
 				todoStr = completed_todo_str;
 			};
-			
-			$divTodo = $("<div></div>");
+
+			$divTodo = $($divTodoStr);			
 			$divTodo.attr('id',sequenceInt);
 			
 			if (completed_todo_str === "") {
@@ -406,25 +423,17 @@ var todos = function() {
 				;					
 			};
 			
-			$cbTodo = $("<input type='checkbox' id='cbTodo' title='Mark Completed'></input>");			
-			$cbTodo.attr('vertical-align', 'bottom');
-			
-			$labelTodo = $("<label>");
 			$labelTodo.text(" " + todoStr);
-
-			$h1Separator = $("<h1></h1>");
-			
 			$divTodo.hide();
-			
 			$divTodo.append($cbTodo);
 			$divTodo.append($labelTodo);
 
 			if (completed_todo_str !== "") {
 				$cbTodo.attr('disabled', 'disabled');
 				$cbTodo.attr('checked', 'checked');
+				$cbTodo.prop('title','');
 				$labelTodo.css({'color':'gray'});
 				$divTodo.attr('data-mongoid', mongo_id);
-				$iconDelete = $('<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>');
 				$divTodo.prepend($iconDelete);
 				completedTodosList.push($divTodo);
 				$(".completedTodos").append($divTodo);
@@ -446,6 +455,7 @@ var todos = function() {
 			console.log("todos array size = " + todosList.length);
 			printTodos();
 			sequenceInt = sequenceInt + 1;			
+			registerTodoEvents();
 		};
 	};
 	
@@ -465,6 +475,7 @@ var todos = function() {
 	buildListsFromSavedTodos = function() {
 		var dfd = new $.Deferred();
 		console.log("buildListsFromSavedTodos");
+		initElements();
 		todosList = [];
 		completedTodosList = [];
 		if (savedTodos !== undefined) {
@@ -472,15 +483,13 @@ var todos = function() {
 			$.each(savedTodos, function(key, value) {
 				console.log(JSON.stringify(key) + ":" + JSON.stringify(value));
 				todoStr = value['description'];
-				$divTodo = $("<div></div>");
+				$divTodo = $($divTodoStr);
+				$labelTodo = $($labelTodoStr);
+				$cbTodo = $($cbTodoStr);
+				$iconDelete = $($iconDeleteStr);
 				$divTodo.attr('data-mongoid',value['_id']);
 				$divTodo.attr('id',value['_id']); // populate id as well, to keep event logic simple
-				$iconDelete = $('<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>');
-				$cbTodo = $("<input type='checkbox' id='cbTodo' title='Mark Completed'></input>");			
-				$cbTodo.attr('vertical-align', 'bottom');			
-				$labelTodo = $("<label></label>");
 				$labelTodo.text(" " + todoStr);
-				$h1Separator = $("<h1></h1>");
 				$divTodo.append($cbTodo);
 				$divTodo.append($labelTodo);
 
@@ -493,10 +502,12 @@ var todos = function() {
 					$divTodo.prepend($iconDelete);
 					$cbTodo.attr('disabled', 'disabled');
 					$cbTodo.attr('checked', 'checked');
+					$cbTodo.prop('title','');
 					$labelTodo.css({'color':'gray'});
 					completedTodosList.push($divTodo);
 				};
-			});			
+			});	
+			console.log('todosList=' + todosList.length + " completedTodosList=" + completedTodosList.length);		
 		} else {
 			console.log("savedTodos is undefined!");
 		};
@@ -504,7 +515,7 @@ var todos = function() {
 		return dfd.promise();
 	};
 	
-	removeTodo = function(id_int) {
+	removeTodo = function(id_int) { //mark todo as completed
 		var 
 			array_index = -1,
 			remove_index = -1,
