@@ -164,7 +164,7 @@ server.post("/deleteTodo", urlencodedParser, function (req, res) {
 				} else {
 					console.log("deleteTodo save response:" + response);		
 					res.send(response);
-					return true;
+					//return true;
 				};
 			});
 		};

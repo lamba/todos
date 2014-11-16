@@ -244,13 +244,14 @@ var todos = function() {
 					'background-image':'url(img/jquery-ui/ui-icons_a9a9a9_256x240.png)'
 				});		
 		});
-		$(".icon-delete").on('click', function() {
+		$(".icon-delete").on('click', function(event) {
+				event.stopImmediatePropagation(); //deleteTodo was getting called twice on occasion, although delete is idempotent...
 				console.log('.icon-delete click')
+				idInt = -1;
 				idInt = $(event.target).parent().attr("id");
-				if (deleteTodo(idInt)) { //if user doesn't cancel deletion
-					$(event.target).parent().fadeOut().remove();
-					printTodos();		
-				};
+				deleteTodo(idInt); //if user doesn't cancel deletion
+				$(event.target).parent().fadeOut().remove();
+				printTodos();		
 				$("#inputTodo").focus();
 		});
 	};
@@ -559,16 +560,19 @@ var todos = function() {
 			array_index = -1,
 			delete_index = -1,
 			todo_div,
-			todo;
+			todo,
+			ids = '';
 		console.log("deleting id: " + id_int);
 		completedTodosList.forEach(function(todo_div) {
 			array_index++;
+			ids += todo_div.attr("id") + ',';
 			if (todo_div.attr("id") === id_int) {
 				todo = todo_div;
 				delete_index = array_index;
 				console.log("array index to delete: " + delete_index);
 			}
 		});
+		console.log('completedTodosList ids:' + ids);
 		completedTodosList.splice(delete_index,1);
 
 		//use method overloading to add the removed todo as a completed todo to the array and display
@@ -578,7 +582,6 @@ var todos = function() {
 		$.post("deleteTodo", {"_id":todo.data('mongoid'), "deleted_date":new Date()}, function (response) {
 			console.log("deleteTodo response: " + JSON.stringify(response));
 		});					
-		return true;
 	};
 	
 	updateAnonymousTodos = function() {
