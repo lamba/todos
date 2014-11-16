@@ -19,6 +19,7 @@ var
 	nodemailer,
 	transporter,
 	mailOptions,
+	todosVersion = "v0.1.3",
 
 	//functions
 	sendEmail;
@@ -70,6 +71,9 @@ ToDo = mongoose.model('ToDo', new Schema({
 	},
 	completed_date: {
 		type:Date,
+	},
+	deleted_date: {
+		type:Date,
 	}
 }, {strict:true}));
 //toDo = mongoose.model("toDo", toDoSchema);
@@ -113,7 +117,7 @@ passport.use(new LocalStrategy({
 ));
 
 http.createServer(server).listen(process.env.PORT || port);
-console.log("Server is listening on port " + (process.env.PORT || port));
+console.log("Server " + todosVersion + " is listening on port " + (process.env.PORT || port));
 
 server.get("/hello",function (req, res) {
 	res.send("Hello World!");
@@ -128,68 +132,42 @@ server.post("/getTodos", urlencodedParser, function (req, res) {
 
 server.post("/removeTodo", urlencodedParser, function (req, res) {
 	console.log("/removeTodo request: " + JSON.stringify(req.body));
-	/*
-	ToDo.update({'_id':req.body._id}, {'completed_date':req.body.completed_date}, function (err, result) {
-		if (err !== null) {
-			console.log(err);
-			res.send(result);
-			return false;
-		} else {
-			console.log(result);		
-			res.sendStatus(result);			
-		};
-	});
-	*/
-	
 	ToDo.findOne({'_id':req.body._id}, function (err, result) {
 		if (err !== null) {
-			console.log(err);
+			console.log("removeTodo findOne error:" + err);
 			res.send(result);
 			return false;
 		} else {
-			console.log(result);		
+			console.log("removeTodo findOne result:" + result);		
 			result.completed_date = req.body.completed_date;
 			result.save();
 			res.send(result);			
 		};
 	});
-	
-	/*
-	ToDo.find({'_id':req.body._id}, function (err, result) {
+});
+
+server.post("/deleteTodo", urlencodedParser, function (req, res) {
+	console.log("/deleteTodo request: " + JSON.stringify(req.body));
+	ToDo.findOne({'_id':req.body._id}, function (err, result) {
 		if (err !== null) {
-			console.log(err);
+			console.log("deleteTodo findOne error:" + err);
 			res.send(result);
 			return false;
 		} else {
-			console.log(result);
-			result.completed_date = req.body.completed_date;
-			//result.save();
-			res.send(result);			
-		};
-	});
-	*/
-	/*
-	ToDo.find({'_id':req.body._id}, function (err, result) {
-		if (err !== null) {
-			console.log(err);
-			res.send(result);
-			return false;
-		} else {
-			console.log('todo to remove: ' + result);		
-			//res.send(result);			
-			result.update({'_id':req.body._id}, {'completed_date':req.body.completed_date}, function (err, result2) {
-				if (err !== null) {
-					console.log(err);
-					res.send(result2);
+			console.log("deleteTodo findOne result:" + result);		
+			result.deleted_date = req.body.deleted_date;
+			result.save(function(error, response){
+				if (error !== null) {
+					console.log("deleteTodo save error:" + error);
+					res.send(response);
 					return false;
 				} else {
-					console.log('update result: ' + result2);		
-					res.send(result2);			
+					console.log("deleteTodo save response:" + response);		
+					return true;
 				};
 			});
 		};
 	});
-	*/
 });
 
 server.post("/updateAnonymousTodo", urlencodedParser, function (req, res) {
@@ -223,7 +201,7 @@ server.get("/sorted_todos.json", urlencodedParser, function (req, res) {
 });
 
 server.post("/getTodosSorted", urlencodedParser, function (req, res) {
-	ToDo.find({'email':req.body.email.toLowerCase()}).sort('created_date').find(function (err, todosList) {
+	ToDo.find({'email':req.body.email.toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
 		res.json(todosList);
 	});
 });

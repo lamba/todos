@@ -40,7 +40,8 @@ var todos = function() {
 		boolRememberMe = false,
 		boolLoggedIn = false,
 		savedTodos,
-				
+		//todosVersion = "v0.1.3",
+
 		//jQuery elements
 		//landing page containers
 		$divLeft,
@@ -117,7 +118,8 @@ var todos = function() {
 		login,
 		getTodosJSON,
 		registerTodoEvents,
-		initElements;
+		initElements,
+		deleteTodo;
 
 	initElements = function() {
 		//Create base landing page elements	
@@ -241,6 +243,15 @@ var todos = function() {
 				$(this).css({
 					'background-image':'url(img/jquery-ui/ui-icons_a9a9a9_256x240.png)'
 				});		
+		});
+		$(".icon-delete").on('click', function() {
+				console.log('.icon-delete click')
+				idInt = $(event.target).parent().attr("id");
+				if (deleteTodo(idInt)) { //if user doesn't cancel deletion
+					$(event.target).parent().fadeOut().remove();
+					printTodos();		
+				};
+				$("#inputTodo").focus();
 		});
 	};
 
@@ -541,6 +552,33 @@ var todos = function() {
 		$.post("removeTodo", {"_id":todo.data('mongoid'), "completed_date":new Date()}, function (response) {
 			console.log("removeTodo response: " + JSON.stringify(response));
 		});					
+	};
+	
+	deleteTodo = function(id_int) { //mark todo as deleted
+		var 
+			array_index = -1,
+			delete_index = -1,
+			todo_div,
+			todo;
+		console.log("deleting id: " + id_int);
+		completedTodosList.forEach(function(todo_div) {
+			array_index++;
+			if (todo_div.attr("id") === id_int) {
+				todo = todo_div;
+				delete_index = array_index;
+				console.log("array index to delete: " + delete_index);
+			}
+		});
+		completedTodosList.splice(delete_index,1);
+
+		//use method overloading to add the removed todo as a completed todo to the array and display
+		//addTodo(completed_todo_str, todo.data('mongoid'));
+
+		console.log('todo id to delete: ' + todo.data('mongoid'));
+		$.post("deleteTodo", {"_id":todo.data('mongoid'), "deleted_date":new Date()}, function (response) {
+			console.log("deleteTodo response: " + JSON.stringify(response));
+		});					
+		return true;
 	};
 	
 	updateAnonymousTodos = function() {
