@@ -7,18 +7,22 @@ ol,ul,dl { list-style-position:inside; }
 body { width:900px; margin:auto; height:100%; overflow:hidden;	background-color:#eee; font-size:125%; }
 section { position:relative; top:2em; left:2em; bottom:2em; right:2em; margin:1em; font-size:.8em; }
 a:enabled[href], input:enabled[type=checkbox], button:enabled { cursor:pointer; }
-button  { margin-left:.2em; }
+label { vertical-align:top; }
+#labelOr { vertical-align:bottom; }
+button { margin-left:.2em; width:3em; height:1.5em; line-height:1em; }
 button.login, .register, .goToLoginPage { width:5em; margin-top:.5em; }
-/* button.login, .register  { disabled:disabled; } */
 
 div.left { float:left; width:49%}
 p.app-title { font-size:2em; font-weight:bold; }
 label.labelShowHistory { font-size:.8em; }
-button { width:4em; height:1.5em; }
 h1 { margin-top:.5em; position:relative; border-top:solid 1px #ccc; width:10%; height:1px; }
 #labelEmail, #labelPassword, #labelRememberMe { margin-left:.5em; }
 #labelLoginPageErrorMessage, #cbRememberMe, #labelRememberMe { display:inline-block; margin-top:.5em; }
 #labelLoginPageErrorMessage { color:red; }
+.icon-delete, .ui-icon, .ui-icon-circle-close { display:inline-block; }
+#cbTodo { margin-left:.5em; }
+.ui-icon { background-image:url(../img/jquery-ui/ui-icons_a9a9a9_256x240.png)}
+.todos { margin-left:2em; }
 
 div.right { float:right; width:49%}
 section.photos { height:10em; }

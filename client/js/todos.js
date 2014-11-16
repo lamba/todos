@@ -54,7 +54,8 @@ var todos = function() {
 		$sectionAbout,
 		
 		//landing page widgets
-		$labelWelcome,		$buttonLoginPage,
+		$labelWelcome,		
+		$buttonLoginPage,
 		$labelOr,
 		$buttonRegisterPage,
 		$cbShowHistory,
@@ -73,6 +74,7 @@ var todos = function() {
 		$pAppTodos,
 		$pEmail,
 		$buttonLogout,
+		$iconDelete,
 		
 		//login/register page widgets
 		$inputEmail,
@@ -107,26 +109,32 @@ var todos = function() {
 		loginEncrypted,
 		register,
 		login,
-		getTodosJSON;
+		getTodosJSON,
+		registerTodoEvents,
+		initElements;
+
+	initElements = function() {
 		
+	};
+
 	//Event handlers
-	registerLandingPageEvents = function(){
-		$(".todoInput button").on("click", function(event){
+	registerLandingPageEvents = function() {
+		$(".todoInput button").on("click", function(event) {
 			addTodo("");
 			$("#inputTodo").focus();
 		});
 		
-		$(".todoInput input").on("keypress", function(event){
+		$(".todoInput input").on("keypress", function(event) {
 			if (event.keyCode === 13) {
 				addTodo("");
 				$("#inputTodo").focus();
-				window.setTimeout(function(){
+				window.setTimeout(function() {
 					$('#inputTodo').focus();
 				}, 50);
 			}
 		});
 		
-		$(".todos").on('change', 'input[type=checkbox]', function(event){
+		$(".todos").on('change', 'input[type=checkbox]', function(event) {
 			idInt = $(event.target).parent().attr("id");
 			$(event.target).parent().fadeOut().remove();
 			removeTodo(idInt);				
@@ -134,26 +142,26 @@ var todos = function() {
 			$("#inputTodo").focus();
 		});
 		
-		$("button.goToLoginPage").on("click", function(event){
+		$("button.goToLoginPage").on("click", function(event) {
 			initializeLoginPage();
 		});  	
 
-		$("button#buttonLogout").on("click", function(event){
+		$("button#buttonLogout").on("click", function(event) {
 			boolLoggedIn = false;
 			initializeLandingPage();
 		});  	
 	};
 	
-	registerLoginPageEvents = function(){
-		$("button.register").on("click", function(event){
+	registerLoginPageEvents = function() {
+		$("button.register").on("click", function(event) {
 			register();
 		});
 		
-		$("button.login").on("click", function(event){
+		$("button.login").on("click", function(event) {
 			login();
 		});			
 
-		$("#cbRememberMe").on('click', function(event){
+		$("#cbRememberMe").on('click', function(event) {
 			console.log("cbRememberMe clicked");
 			if ($('#cbRememberMe').is(':checked')) {
 				boolRememberMe = true;
@@ -163,6 +171,24 @@ var todos = function() {
 		});			
 	};
 	
+	registerTodoEvents = function() {
+		console.log('init');
+		$(".icon-delete").on('mouseover', function() {
+				console.log('.icon-delete mouseover')
+				//$(this).addClass('ui-state-hover');
+				$(this).css({
+					'background-image':'url(img/jquery-ui/ui-icons_cd2626_256x240.png)'
+				});		
+		});
+		$(".icon-delete").on('mouseout', function() {
+				console.log('.icon-delete mouseout')
+				//$(this).removeClass("ui-state-hover");
+				$(this).css({
+					'background-image':'url(img/jquery-ui/ui-icons_a9a9a9_256x240.png)'
+				});		
+		});
+	};
+
 	disableLoginRegister = function() {
 		$buttonLoginPage.prop('disabled', true);		
 		$buttonRegisterPage.prop('disabled', true);
@@ -269,7 +295,7 @@ var todos = function() {
 		$sectionUser = $("<section class='user'></section>");
 		$labelWelcome = $("<label id='welcome-label'>Welcome, </label>" + userEmail + "!<br>");
 		$buttonLoginPage = $("<button class='goToLoginPage'>Login</button>");
-		$labelOr = $("<label> or </label>");
+		$labelOr = $("<label id='labelOr'> or </label>");
 		$buttonRegisterPage = $("<button class='goToLoginPage'>Register</button>");
 		$buttonLogout = $("<button id='buttonLogout'>Logout</button>");
 		
@@ -347,13 +373,15 @@ var todos = function() {
 		$.when(updateAnonymousTodos())
 			.then(getTodos)
 			.then(buildListsFromSavedTodos) 
-			.then(displayTodos);
+			.then(displayTodos)
+			.then(registerTodoEvents);
 	};
 
 	//if completed_todo_str is supplied, then removeTodo already marked the todo as completed in the db
 	//	i.e. add the completed todo to the completedTodosList array	and display it
 	addTodo = function(completed_todo_str, mongo_id) {
 		var add_response;
+		initElements();
 		if ($(".todoInput input").val() !== "" || completed_todo_str !== "") {
 			if ($(".todoInput input").val() !== "") {
 				todoStr = $(".todoInput input").val();
@@ -378,7 +406,7 @@ var todos = function() {
 				;					
 			};
 			
-			$cbTodo = $("<input type='checkbox'>");			
+			$cbTodo = $("<input type='checkbox' id='cbTodo' title='Mark Completed'></input>");			
 			$cbTodo.attr('vertical-align', 'bottom');
 			
 			$labelTodo = $("<label>");
@@ -396,6 +424,8 @@ var todos = function() {
 				$cbTodo.attr('checked', 'checked');
 				$labelTodo.css({'color':'gray'});
 				$divTodo.attr('data-mongoid', mongo_id);
+				$iconDelete = $('<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>');
+				$divTodo.prepend($iconDelete);
 				completedTodosList.push($divTodo);
 				$(".completedTodos").append($divTodo);
 				boolCompletedTodos = true;
@@ -445,9 +475,10 @@ var todos = function() {
 				$divTodo = $("<div></div>");
 				$divTodo.attr('data-mongoid',value['_id']);
 				$divTodo.attr('id',value['_id']); // populate id as well, to keep event logic simple
-				$cbTodo = $("<input type='checkbox'>");			
+				$iconDelete = $('<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>');
+				$cbTodo = $("<input type='checkbox' id='cbTodo' title='Mark Completed'></input>");			
 				$cbTodo.attr('vertical-align', 'bottom');			
-				$labelTodo = $("<label>");
+				$labelTodo = $("<label></label>");
 				$labelTodo.text(" " + todoStr);
 				$h1Separator = $("<h1></h1>");
 				$divTodo.append($cbTodo);
@@ -459,6 +490,7 @@ var todos = function() {
 				} else {
 					console.log("completed todo found");
 					boolCompletedTodos = true;
+					$divTodo.prepend($iconDelete);
 					$cbTodo.attr('disabled', 'disabled');
 					$cbTodo.attr('checked', 'checked');
 					$labelTodo.css({'color':'gray'});
