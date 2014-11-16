@@ -156,16 +156,17 @@ server.post("/deleteTodo", urlencodedParser, function (req, res) {
 		} else {
 			console.log("deleteTodo findOne result:" + result);		
 			result.deleted_date = req.body.deleted_date;
-			result.save(/*function(error, response){
+			result.save(function(error, response){
 				if (error !== null) {
 					console.log("deleteTodo save error:" + error);
 					res.send(response);
 					return false;
 				} else {
 					console.log("deleteTodo save response:" + response);		
+					res.send(response);
 					return true;
 				};
-			}*/);
+			});
 		};
 	});
 });
