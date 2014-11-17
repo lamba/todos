@@ -40,7 +40,7 @@ var todos = function() {
 		boolRememberMe = false,
 		boolLoggedIn = false,
 		savedTodos,
-		//todosVersion = "v0.1.3",
+		todosVersion = "v0.1.3",
 
 		//jQuery elements
 		//landing page containers
@@ -145,7 +145,7 @@ var todos = function() {
 		$sectionAbout = $("<section class='about'></section>");
 		$pAboutHeading = $("<p id='about-heading'>About This App</p>");
 		$pAbout = $("<p id='about'>" 
-			+ "This is v0.1.3 of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, SSL, AJAX, JSON, Node.js & Mongo, "
+			+ "This is " + todosVersion + " of an all-JavaScript full-stack SPA POC using HTML5, CSS3, JavaScript, SSL, AJAX, JSON, Node.js & Mongo, "
 			+ "deployed to the Heroku cloud PaaS (managed by Salesforce.com and based on Amazon's AWS)."
 			+ "</p>");
 		$pAppTodosHeading = $("<p id='app-todos-heading'>ToDos for this ToDos app (pun intended!)</p>");
@@ -166,6 +166,17 @@ var todos = function() {
 		$labelTodo = $("<label></label>");
 		$h1Separator = $("<h1></h1>");
 		$iconDelete = $('<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>');
+
+		//Initialize login page elements
+		$inputEmail = $("<input type='text' id='inputEmail' maxlength='40' style='width:12em'></input>");
+		$labelEmail = $("<label id='labelEmail'>Email</label><br>");
+		$inputPassword = $("<input type='password' id='inputPassword' maxlength='40' style='width:12em'></input>");
+		$labelPassword = $("<label id='labelPassword'>Password</label><br>");
+		$cbRememberMe = $("<input type='checkbox' id='cbRememberMe'>");
+		$labelRememberMe = $("<label id='labelRememberMe'>Remember Email</label><br>");
+		$buttonLogin = $("<button class='login'>Login</button>");
+		$buttonRegister = $("<button class='register'>Register</button>");
+		$labelLoginPageErrorMessage = $("<br><label id='labelLoginPageErrorMessage'></label>");
 
 		//Definitions for recurring elements that must be recreated on the fly
 		$divTodoStr = "<div></div>";
@@ -210,6 +221,7 @@ var todos = function() {
 	};
 	
 	registerLoginPageEvents = function() {
+		console.log('registerLoginPageEvents');
 		$("button.register").on("click", function(event) {
 			register();
 		});
@@ -616,17 +628,10 @@ var todos = function() {
 		console.log("initializeLoginPage");
 		//getCookies();
 		//$divLeft.fadeOut();
+		$("body").empty();		
+		initElements();
 		$divLeft.empty();
 		
-		$inputEmail = $("<input type='text' id='inputEmail' maxlength='40' style='width:12em'></input>");
-		$labelEmail = $("<label id='labelEmail'>Email</label><br>");
-		$inputPassword = $("<input type='password' id='inputPassword' maxlength='40' style='width:12em'></input>");
-		$labelPassword = $("<label id='labelPassword'>Password</label><br>");
-		$cbRememberMe = $("<input type='checkbox' id='cbRememberMe'>");
-		$labelRememberMe = $("<label id='labelRememberMe'>Remember Email</label><br>");
-		$buttonLogin = $("<button class='login'>Login</button>");
-		$buttonRegister = $("<button class='register'>Register</button>");
-		$labelLoginPageErrorMessage = $("<br><label id='labelLoginPageErrorMessage'></label>");
 		$sectionUser.empty();
 		$sectionUser.append($inputEmail);
 		$sectionUser.append($labelEmail);
@@ -656,6 +661,9 @@ var todos = function() {
 		$divLeft.append($sectionUser);
 		//$divLeft.fadeIn; //fadeIn seems to flicker or execute twice
 		
+		$("body").append($divLeft);
+		$("body").append($divRight);
+
 		registerLoginPageEvents();
 		$("#inputEmail").focus();
 	};
