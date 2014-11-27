@@ -40,12 +40,15 @@ var todos = function() {
 		boolRememberMe = false,
 		boolLoggedIn = false,
 		savedTodos,
-		todosVersion = "v0.1.3",
+		todosVersion = "v0.1.4",
+		numTodos = 0,
+		maxTodos = 20,
 
 		//jQuery elements
 		//landing page containers
 		$divLeft,
 		$divRight,
+		$divFooter,
 		$sectionUser,
 		$sectionPreferences,
 		$sectionTodoInput,
@@ -53,7 +56,8 @@ var todos = function() {
 		$sectionCompletedTodos,
 		$sectionPhotos,
 		$sectionAbout,
-		
+		$sectionFooter,
+
 		//landing page widgets
 		$labelWelcome,		
 		$buttonLoginPage,
@@ -64,6 +68,7 @@ var todos = function() {
 		$pAddTodo,
 		$inputTodo,
 		$buttonAddTodo,
+		$labelNumTodos,
 		$cbTodo,
 		$labelTodo,
 		$divTodo,
@@ -76,7 +81,8 @@ var todos = function() {
 		$pEmail,
 		$buttonLogout,
 		$iconDelete,
-		
+		$pGitHub,
+
 		//landing page widget definitions (for recurring elements)
 		$divTodoStr,
 		$labelTodoStr,
@@ -93,7 +99,17 @@ var todos = function() {
 		$buttonLogin,
 		$buttonRegister,
 		$labelLoginPageErrorMessage,
-		
+
+		//feature page widgets
+		$sectionFeatures,
+		$pFeaturesHeading,
+		$pFeatures,
+
+		//footer widgets
+		$buttonHome,
+		$buttonFeatures,
+		$buttonContact,
+
 		//function names
 		getCookies,
 		addTodo,
@@ -119,9 +135,13 @@ var todos = function() {
 		getTodosJSON,
 		registerTodoEvents,
 		initElements,
-		deleteTodo;
+		deleteTodo,
+		initializeFeaturesPage,
+		registerFeaturesPageEvents,
+		enforceMaxTodos;
 
 	initElements = function() {
+		console.log("initElements");
 		//Create base landing page elements	
 		$divLeft = $("<div class='left'></div>");		
 		$sectionUser = $("<section class='user'></section>");
@@ -136,9 +156,10 @@ var todos = function() {
 		$sectionTodoInput = $("<section class='todoInput'></section>");
 		$pAddTodo = $("<p class='app-title'>Add ToDo</p>");
 		$inputTodo = $("<input type='text' id='inputTodo' maxlength='40'>");
-		$buttonAddTodo = ("<button id='addTodo'>+</button>");
-		$sectionTodos = ("<section class='todos'></section>");
-		$sectionCompletedTodos = ("<section class='completedTodos'></section>");
+		$buttonAddTodo = $("<button id='addTodo'>+</button>");
+		$labelNumTodos = $('<label id="labelNumTodos"></label>');
+		$sectionTodos = $("<section class='todos'></section>");
+		$sectionCompletedTodos = $("<section class='completedTodos'></section>");
 	
 		$divRight = $("<div class='right'></div>");
 		$sectionPhotos = $("<section class='photos'></section>");				
@@ -151,13 +172,16 @@ var todos = function() {
 		$pAppTodosHeading = $("<p id='app-todos-heading'>ToDos for this ToDos app (pun intended!)</p>");
 		$pAppTodos = $("<p id='app-todos'>" 
 			+ "<li>Add a test framework and suite of tests"
-			+	"<li>Improve responsive design"
-			+	"<li>Leverage HTML5 History API"
 			+	"<li>Manage content overflow"
 			+	"<li>Make 'show history' configurable"
 			+	"<li>Allow inline editing of todos"
+			+ "<li>Center, RD, Hist, SVG(d3), Canvas(proc), WebGL"
 			+ "</p>");
 		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
+		$pGitHub = $("<p id='pGitHub'>GitHub: github DOT com SLASH lamba</p>");
+
+		$divFooter = $('<div class="divFooter"></div>');
+		$sectionFooter = $('<section id="sectionFooter"></section>');
 
 		//Create todo landing page elements
 		$divTodo = $("<div></div>");
@@ -183,10 +207,48 @@ var todos = function() {
 		$labelTodoStr = "<label></label>";
 		$cbTodoStr = "<input type='checkbox' id='cbTodo' title='Mark Completed'></input>";
 		$iconDeleteStr = '<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>';
+
+		//Create feature page elements
+		$sectionFeatures = $("<section id='sectionFeatures'></section>");
+		$pFeaturesHeading = $("<p id='pFeaturesHeading'>Features</p>");
+		$pFeatures = $("<p id='pFeatures'>" 
+			+ "<ul>"
+			+		"<li>v0.1.4</li>"
+			+ 	"<ul>"
+			+			"<li>Added footer w/ Home, Features, & Contact buttons</li>"
+			+			"<li>Added features section</li>"
+			+ 	"</ul>"
+			+		"<li>v0.1.3</li>"
+			+ 	"<ul>"
+			+			"<li>Added README.md</li>"
+			+			"<li>Added ability to delete completed undo</li>"
+			+			"<li>Added password encryption</li>"
+			+ 	"</ul>"
+			+		"<li>v0.1.2</li>"
+			+ 	"<ul>"
+			+			"<li>Added persistence via MongoDB</li>"
+			+			"<li>Added security (authentication and authorization)</li>"
+			+ 	"</ul>"
+			+		"<li>v0.1.1</li>"
+			+ 	"<ul>"
+			+			"<li>Cross-browser compatibility fixes</li>"
+			+ 	"</ul>"
+			+		"<li>v0.1.0</li>"
+			+ 	"<ul>"
+			+			"<li>Initial release</li>"
+			+ 	"</ul>"
+			+ "</ul>"
+			+ "</p>");
+
+		//Create footer elements
+		$buttonHome = $("<button class='buttonFooter' id='buttonHome'>Home</button>");
+		$buttonFeatures = $("<button class='buttonFooter' id='buttonFeatures'>Features</button>");
+		$buttonContact = $("<button class='buttonFooter' id='buttonContact'>Contact</button>");
 	};
 
 	//Event handlers
 	registerLandingPageEvents = function() {
+		console.log("registerLandingPageEvents");
 		$(".todoInput button").on("click", function(event) {
 			addTodo("");
 			$("#inputTodo").focus();
@@ -216,8 +278,21 @@ var todos = function() {
 
 		$("button#buttonLogout").on("click", function(event) {
 			boolLoggedIn = false;
-			initializeLandingPage();
+			initializeLandingPage(true,true);
 		});  	
+
+		$('button#buttonFeatures').on("click", function(event) {
+			initializeFeaturesPage();			
+		});
+
+		$("#buttonHome").on('click', function(event) {
+			initializeLandingPage(true, true);
+		});
+
+		$("#buttonContact").on('click', function(event) {
+			initializeLandingPage(true, true);
+		});
+
 	};
 	
 	registerLoginPageEvents = function() {
@@ -266,6 +341,9 @@ var todos = function() {
 				printTodos();		
 				$("#inputTodo").focus();
 		});
+	};
+
+	registerFeaturesPageEvents = function() {
 	};
 
 	disableLoginRegister = function() {
@@ -365,65 +443,80 @@ var todos = function() {
 		console.log("cookie: " + $.cookie('email'));
 	};
 		
-	initializeLandingPage = function() {
+	initializeLandingPage = function(left, right) {
 		console.log("initializeLandingPage");
 		initElements();
 		$("body").empty();		
-		$labelWelcome.append(userEmail + "!<br>");
-		
-		$sectionUser.append($labelWelcome);
+		if (left) {
+			$labelWelcome.append(userEmail + "!<br>");
+			
+			$sectionUser.append($labelWelcome);
 
-		if (boolLoggedIn === false) {
-			$sectionUser.append($buttonLoginPage);
-			$sectionUser.append($labelOr);
-			$sectionUser.append($buttonRegisterPage);
-		} else {
-			$sectionUser.append($buttonLogout);
+			if (boolLoggedIn === false) {
+				$sectionUser.append($buttonLoginPage);
+				$sectionUser.append($labelOr);
+				$sectionUser.append($buttonRegisterPage);
+			} else {
+				$sectionUser.append($buttonLogout);
+			};
+			
+			$sectionPreferences.append($cbShowHistory);
+			$sectionPreferences.append($labelShowHistory);
+
+			$sectionTodoInput.append($pAddTodo);
+			$sectionTodoInput.append($inputTodo);
+			$sectionTodoInput.append($buttonAddTodo);
+			$sectionTodoInput.append($labelNumTodos);
+
+			$divLeft.append($sectionUser);
+			$divLeft.append($sectionPreferences);
+			$divLeft.append($sectionTodoInput);
+			$divLeft.append($sectionTodos);
+			$divLeft.append($sectionCompletedTodos);			
+	
+			enforceMaxTodos();
+			$("body").append($divLeft);
+
+			//if there are any todos (todosList) mapped to "anonymous", update email to logged in user's email
+			//use promises/deferreds to sequence
+			$.when(updateAnonymousTodos())
+				.then(getTodos)
+				.then(buildListsFromSavedTodos)
+				.then(enforceMaxTodos) 
+				.then(displayTodos)
+				.then(registerTodoEvents);
+		};
+
+		if (right) {
+			$sectionAbout.append($pAboutHeading);
+			$sectionAbout.append($pAbout);
+			$sectionAbout.append($pAppTodosHeading);
+			$sectionAbout.append($pAppTodos);
+			$sectionAbout.append($pEmail);
+			$sectionAbout.append($pGitHub);
+			
+			$divRight.append($sectionPhotos);		
+			$divRight.append($sectionAbout);			
+			$("body").append($divRight);
 		};
 		
-		$sectionPreferences.append($cbShowHistory);
-		$sectionPreferences.append($labelShowHistory);
+		//Footer
+		$sectionFooter.append($buttonHome);
+		$sectionFooter.append($buttonFeatures);
+		$sectionFooter.append($buttonContact);
+		$divFooter.append($sectionFooter);
+		$("body").append($divFooter);
 
-		$sectionTodoInput.append($pAddTodo);
-		$sectionTodoInput.append($inputTodo);
-		$sectionTodoInput.append($buttonAddTodo);
-		
-		$divLeft.append($sectionUser);
-		$divLeft.append($sectionPreferences);
-		$divLeft.append($sectionTodoInput);
-		$divLeft.append($sectionTodos);
-		$divLeft.append($sectionCompletedTodos);
-		
-		$sectionAbout.append($pAboutHeading);
-		$sectionAbout.append($pAbout);
-		$sectionAbout.append($pAppTodosHeading);
-		$sectionAbout.append($pAppTodos);
-		$sectionAbout.append($pEmail);
-		
-		$divRight.append($sectionPhotos);		
-		$divRight.append($sectionAbout);
-		
-		$("body").append($divLeft);
-		$("body").append($divRight);
-		
-		registerLandingPageEvents();
 		$(".todoInput input").focus();
-
-		//if there are any todos (todosList) mapped to "anonymous", update email to logged in user's email
-		//use promises/deferreds to sequence
-		$.when(updateAnonymousTodos())
-			.then(getTodos)
-			.then(buildListsFromSavedTodos) 
-			.then(displayTodos)
-			.then(registerTodoEvents);
+		registerLandingPageEvents();
 	};
 
 	//if completed_todo_str is supplied, then removeTodo already marked the todo as completed in the db
 	//	i.e. add the completed todo to the completedTodosList array	and display it
 	addTodo = function(completed_todo_str, mongo_id) {
 		var add_response;
-		initElements();
 		if ($(".todoInput input").val() !== "" || completed_todo_str !== "") {
+			initElements();
 			if ($(".todoInput input").val() !== "") {
 				todoStr = $(".todoInput input").val();
 			} else {
@@ -480,6 +573,7 @@ var todos = function() {
 			printTodos();
 			sequenceInt = sequenceInt + 1;			
 			registerTodoEvents();
+			enforceMaxTodos();
 		};
 	};
 	
@@ -564,7 +658,8 @@ var todos = function() {
 		console.log('todo id to remove: ' + todo.data('mongoid'));
 		$.post("removeTodo", {"_id":todo.data('mongoid'), "completed_date":new Date()}, function (response) {
 			console.log("removeTodo response: " + JSON.stringify(response));
-		});					
+			enforceMaxTodos();					
+		});
 	};
 	
 	deleteTodo = function(id_int) { //mark todo as deleted
@@ -593,6 +688,7 @@ var todos = function() {
 		console.log('todo id to delete: ' + todo.data('mongoid'));
 		$.post("deleteTodo", {"_id":todo.data('mongoid'), "deleted_date":new Date()}, function (response) {
 			console.log("deleteTodo response: " + JSON.stringify(response));
+			enforceMaxTodos();
 		});					
 	};
 	
@@ -626,12 +722,12 @@ var todos = function() {
 	
 	initializeLoginPage = function() {
 		console.log("initializeLoginPage");
-		//getCookies();
-		//$divLeft.fadeOut();
 		$("body").empty();		
+
 		initElements();
-		$divLeft.empty();
-		
+		initializeLandingPage(false,true);
+
+		$divLeft.empty();		
 		$sectionUser.empty();
 		$sectionUser.append($inputEmail);
 		$sectionUser.append($labelEmail);
@@ -659,11 +755,7 @@ var todos = function() {
 			$("#inputEmail").focus();
 		};
 		$divLeft.append($sectionUser);
-		//$divLeft.fadeIn; //fadeIn seems to flicker or execute twice
-		
-		$("body").append($divLeft);
-		$("body").append($divRight);
-
+		$("body").prepend($divLeft);
 		registerLoginPageEvents();
 		$("#inputEmail").focus();
 	};
@@ -697,7 +789,7 @@ var todos = function() {
 			})
 				.error(function(){
 					boolLoggedIn = false;
-					console.log("login request failed");
+					console.log("lfplaplogin request failed");
 					$labelLoginErrorMessage.text(response);
 				})
 				.done(function(){
@@ -711,7 +803,7 @@ var todos = function() {
 					if ($labelLoginPageErrorMessage.text() === "") {
 						boolLoggedIn = true;
 						manageCookies();
-						initializeLandingPage();
+						initializeLandingPage(true,true);
 					};
 				})
 			;		
@@ -748,7 +840,7 @@ var todos = function() {
 					if ($labelLoginPageErrorMessage.text() === "") {
 						boolLoggedIn = true;
 						manageCookies();
-						initializeLandingPage();
+						initializeLandingPage(true,true);
 					};
 				})
 			;		
@@ -762,7 +854,7 @@ var todos = function() {
 		console.log("registerUser");
 		$labelLoginPageErrorMessage.text("");
 		if ($("#inputEmail").val() !== "" && $("#inputPassword").val() !== "") {
-			$.post("users", {"email":$("#inputEmail").val(), "password":$("#inputPassword").val()}, function (response) {
+			$.post("register", {"email":$("#inputEmail").val(), "password":$("#inputPassword").val()}, function (response) {
 				console.log("registerUser response: " + response);
 				if (response.indexOf("duplicate key error") > -1) {
 					boolLoggedIn = false;
@@ -785,7 +877,7 @@ var todos = function() {
 					if ($labelLoginPageErrorMessage.text() === "") {
 						boolLoggedIn = true;
 						manageCookies();
-						initializeLandingPage();
+						initializeLandingPage(true,true);
 					};
 				})
 			;		
@@ -822,7 +914,7 @@ var todos = function() {
 					if ($labelLoginPageErrorMessage.text() === "") {
 						boolLoggedIn = true;
 						manageCookies();
-						initializeLandingPage();
+						initializeLandingPage(true,true);
 					};
 				})
 			;		
@@ -858,9 +950,44 @@ var todos = function() {
 			display_photo(0);		
 		});
 	};
+
+	initializeFeaturesPage = function() {
+		console.log("initializeFeaturesPage");
+		$("body").empty();		
+		initElements();
+		initializeLandingPage(false,true);
+		$divLeft.empty();		
+		$sectionFeatures.append($pFeaturesHeading);
+		$sectionFeatures.append($pFeatures);
+		$divLeft.append($sectionFeatures);
+		$("body").prepend($divLeft);
+		//registerFeaturePageEvents();
+	};
+
+	enforceMaxTodos = function() {
+		console.log('enforceMaxTodos');
+		numTodos = todosList.length + completedTodosList.length;
+		console.log('numTodos=' + numTodos);
+		if (numTodos >= maxTodos) {
+			$('#inputTodo').attr('disabled', true);
+			$('#labelNumTodos').css({
+				'color':'#f00'
+			});
+		} else {
+			$('#inputTodo').attr('disabled', false);
+			$("#inputTodo").focus();
+			$('#labelNumTodos').css({
+				'color':'#000'
+			});			
+			
+		};
+		$('#labelNumTodos').text(numTodos + '/' + maxTodos);
+		//$sectionTodoInput.find('label').remove();
+		//$sectionTodoInput.append($labelNumTodos);
+	};
 		
 	getCookies();	
-	initializeLandingPage();
+	initializeLandingPage(true,true);
 	getPhotos();
 	
 };	

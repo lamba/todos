@@ -1,22 +1,24 @@
 /* Reset */
 * { margin:0; padding:0; -webkit-box-sizing:border-box; -moz-box-sizing:border-box;	box-sizing:border-box; }
 h1,h2,h3,h4,h5,h6,p { margin-bottom:10px; }
-ol,ul,dl { list-style-position:inside; }
+ol,ul,dl { margin-left:.5em; }
 
 /* Standard selectors */
 body { width:900px; margin:auto; height:100%; overflow:hidden;	background-color:#eee; font-size:125%; }
 section { position:relative; top:2em; left:2em; bottom:2em; right:2em; margin:1em; font-size:.8em; }
+
 a:enabled[href], input:enabled[type=checkbox], button:enabled, .icon-delete { cursor:pointer; }
 label { vertical-align:top; }
 #labelOr { vertical-align:bottom; }
 button { margin-left:.2em; width:3em; height:1.5em; line-height:1em; }
 button.login, .register, #buttonLogout, .goToLoginPage { width:5em; margin-top:.5em; }
+button.buttonFooter { width:5em; margin:.3em; }
 
 div.left { float:left; width:49%}
-p.app-title { font-size:2em; font-weight:bold; }
+p.app-title { font-size:1.5em; font-weight:bold; }
 label.labelShowHistory { font-size:.8em; }
 h1 { margin-top:.5em; position:relative; border-top:solid 1px #ccc; width:10%; height:1px; }
-#labelEmail, #labelPassword, #labelRememberMe { margin-left:.5em; }
+#labelEmail, #labelPassword, #labelRememberMe, #labelNumTodos { margin-left:.5em; }
 #labelLoginPageErrorMessage, #cbRememberMe, #labelRememberMe { display:inline-block; margin-top:.5em; }
 #cbRememberMe { margin-top: .9em; }
 #labelLoginPageErrorMessage { color:red; }
@@ -32,4 +34,10 @@ img { height:10em; }
 section.about p { width:20em; }
 #app-todos-heading { font-weight:bold; }
 section.about li { font-weight:regular; }
-p.email { color:blue; }
+p.email, p#pGitHub { color:blue; }
+
+div.divFooter { clear:both; padding-top:.5em; }
+section#sectionFooter { background-color:#aaa; top:0em;}
+
+section#sectionFeatures {}
+#pFeaturesHeading { font-weight:bold; }

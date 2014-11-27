@@ -13,6 +13,7 @@ var
 	bcrypt,
 	loginErrorMessage,
 	cookieParser,
+	session,
   port,
 	server,
 	mongoURI,
@@ -20,6 +21,7 @@ var
 	transporter,
 	mailOptions,
 	todosVersion = "v0.1.3",
+	sid,
 
 	//functions
 	sendEmail;
@@ -32,6 +34,7 @@ mongoose = require("mongoose");
 passport = require("passport");
 LocalStrategy = require("passport-local").Strategy;
 cookieParser = require("cookie-parser");
+session = require("express-session");
 bcrypt = require("bcrypt-nodejs");
 nodemailer = require("nodemailer");
 
@@ -45,6 +48,11 @@ server = express();
 
 server.use(express.static(__dirname + "/client"));
 server.use(cookieParser());
+server.use(session({
+	secret:'topsecret',
+	saveUninitialized:true,
+	resave:true
+}));
 
 mongoose.connect(process.env.MONGOLAB_URI || mongoURI, function(err) {
 	if (err) {
@@ -55,6 +63,31 @@ mongoose.connect(process.env.MONGOLAB_URI || mongoURI, function(err) {
 });
 
 Schema = mongoose.Schema;
+
+User = mongoose.model('User', new Schema({
+	email: {
+		type:String, 
+		lowercase:true, 
+		required:true, 
+		unique:true,
+	},
+	password: {
+		type:String, 
+		required:true,
+	},
+	created_date: {
+		type:Date,
+	},
+	last_login_date: {
+		type:Date,
+	},
+	roles: {
+		type:String,
+	},
+	sid: {
+		type:String,
+	}
+}, {strict:true}));
 
 ToDo = mongoose.model('ToDo', new Schema({
 	description: {
@@ -76,32 +109,9 @@ ToDo = mongoose.model('ToDo', new Schema({
 		type:Date,
 	}
 }, {strict:true}));
-//toDo = mongoose.model("toDo", toDoSchema);
-
-User = mongoose.model('User', new Schema({
-	email: {
-		type:String, 
-		lowercase:true, 
-		required:true, 
-		unique:true,
-	},
-	password: {
-		type:String, 
-		required:true,
-	},
-	created_date: {
-		type:Date,
-	},
-	last_login_date: {
-		type:Date,
-	}
-}, {strict:true}));
-//user = mongoose.model("user", userSchema);
 
 jsonParser = bodyParser.json();
 urlencodedParser = bodyParser.urlencoded({extended:false});
-//server.use(bodyParser.urlencoded());
-//server.use(bodyParser.json());
 
 passport.use(new LocalStrategy({
 		usernameField:'email'
@@ -210,6 +220,7 @@ server.post("/getTodosSorted", urlencodedParser, function (req, res) {
 //use http://localhost/alltodos.json
 server.get("/alltodos.json", urlencodedParser, function (req, res) {
 	ToDo.find({}, function (err, todosList) {
+		console.log("sid:" + req.sessionID);
 		res.json(todosList);
 	});
 });
@@ -234,8 +245,8 @@ server.post("/addTodo", urlencodedParser, function (req, res) {
 	});
 });
 
-server.post("/users", urlencodedParser, function (req, res) {
-	console.log("/users request: " + req.body);
+server.post("/register", urlencodedParser, function (req, res) {
+	console.log("/register request: " + req.body);
 	if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Invalid email');
 		res.send("Error: Invalid email");
@@ -243,7 +254,8 @@ server.post("/users", urlencodedParser, function (req, res) {
 	};
 	var newUser = new User({
 		"email":req.body.email.toLowerCase(),
-		"password":req.body.password
+		"password":req.body.password,
+		"roles":""
 	});
 	newUser.save( function (err, result) {
 		if (err !== null) {
@@ -251,7 +263,31 @@ server.post("/users", urlencodedParser, function (req, res) {
 			res.send("Error: " + err);
 			return false;
 		} else {
-			res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
+			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
+			res.send("Success");			
+		};
+	});
+});
+
+server.post("/registerEncrypted", urlencodedParser, function (req, res) {
+	console.log("/registerEncrypted request: " + req.body);
+	if (!sendEmail(req.body.email.toLowerCase())) {
+		console.log('Could not send email to confirm registration');
+		res.send("Error: Could not send email to confirm registration");
+		return false;
+	};
+	var newUser = new User({
+		"email":req.body.email.toLowerCase(),
+		"password":bcrypt.hashSync(req.body.password),
+		"roles":""
+	});
+	newUser.save( function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			res.send("Error: " + err);
+			return false;
+		} else {
+			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
 			res.send("Success");			
 		};
 	});
@@ -282,29 +318,6 @@ sendEmail = function (email) {
 	*/
 };
 
-server.post("/registerEncrypted", urlencodedParser, function (req, res) {
-	console.log("/registerEncrypted request: " + req.body);
-	if (!sendEmail(req.body.email.toLowerCase())) {
-		console.log('Could not send email to confirm registration');
-		res.send("Error: Could not send email to confirm registration");
-		return false;
-	};
-	var newUser = new User({
-		"email":req.body.email.toLowerCase(),
-		"password":bcrypt.hashSync(req.body.password)
-	});
-	newUser.save( function (err, result) {
-		if (err !== null) {
-			console.log(err);
-			res.send("Error: " + err);
-			return false;
-		} else {
-			res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
-			res.send("Success");			
-		};
-	});
-});
-
 server.get("/cookies", urlencodedParser, function (req, res) {
 	console.log("/cookies request: " + req.body);
 	res.send(req.Cookies);
@@ -321,7 +334,7 @@ server.post("/login", urlencodedParser, function (req, res) {
 	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) {
 			console.log(err);
-			res.send("Invalid email");
+			res.send("Email not registered");
 			return false;
 		} else {
 			console.log("email:" + user.email + ", password: " + user.password);
@@ -334,12 +347,10 @@ server.post("/login", urlencodedParser, function (req, res) {
 					return false;
 				} else {
 					console.log("Updated last login for user: " + user.email + ", Result: " + result);
+					console.log("session:" + JSON.stringify(req.session));
+					console.log("sid:" + req.sessionID);
 				};			
 			});
-			//only seems to work if httpOnly is explicitly set
-			//browser/jquery only sees it is httpOnly:false
-			//maxAge is in milliseconds 60*60*1,000 = 3,600,000
-			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
 			res.send("Success");
 		} else {
 			console.log("Invalid password");
@@ -360,7 +371,7 @@ server.post("/loginEncrypted", urlencodedParser, function (req, res) {
 	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) {
 			console.log(err);
-			res.send("Invalid email");
+			res.send("Email not registered");
 			return false;
 		} else {
 			console.log("email:" + user.email + ", password: " + user.password);
@@ -375,10 +386,6 @@ server.post("/loginEncrypted", urlencodedParser, function (req, res) {
 					console.log("Updated last login for user: " + user.email + ", Result: " + result);
 				};			
 			});
-			//only seems to work if httpOnly is explicitly set
-			//browser/jquery only sees it is httpOnly:false
-			//maxAge is in milliseconds 60*60*1,000 = 3,600,000
-			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
 			res.send("Success");
 		} else {
 			console.log("Invalid password");
