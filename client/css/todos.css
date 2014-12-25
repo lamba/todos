@@ -12,7 +12,7 @@ label { vertical-align:top; }
 #labelOr { vertical-align:bottom; }
 button { margin-left:.2em; width:3em; height:1.5em; line-height:1em; }
 button.login, .register, #buttonLogout, .goToLoginPage { width:5em; margin-top:.5em; }
-button.buttonFooter { width:5em; margin:.3em; }
+button.buttonFooter { width:6em; margin: .3em .2em; }
 
 div.left { float:left; width:49%}
 p.app-title { font-size:1.5em; font-weight:bold; }
@@ -36,8 +36,10 @@ section.about p { width:20em; }
 section.about li { font-weight:regular; }
 p.email, p#pGitHub { color:blue; }
 
+#divStickyNote { width:27em; height:30em; }
+
 div.divFooter { clear:both; padding-top:.5em; }
 section#sectionFooter { background-color:#aaa; top:0em;}
 
 section#sectionFeatures {}
-#pFeaturesHeading { font-weight:bold; }
+#pFeaturesHeading, #pStoryBoardHeading { font-weight:bold; }

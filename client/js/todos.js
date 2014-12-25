@@ -40,9 +40,31 @@ var todos = function() {
 		boolRememberMe = false,
 		boolLoggedIn = false,
 		savedTodos,
-		todosVersion = "v0.1.4",
+		todosVersion = "v0.1.5",
 		numTodos = 0,
 		maxTodos = 20,
+
+		//sticky note options
+		note = { //prototype
+			"id": -1,
+		  "text": "",
+			"pos_x": 5,
+			"pos_y": 5,	
+			"width": 120,							
+			"height": 60,													
+		},
+		stickyNoteOptions = {
+			notes:[],
+			resizable: true,
+			controls: true, 
+			editCallback: noteEdited,
+			createCallback: noteCreated,
+			deleteCallback: noteDeleted,
+			moveCallback: noteMoved,					
+			resizeCallback: noteResized					
+		},
+		notesCount,
+		notesMaxPerColumnCount = 7,
 
 		//jQuery elements
 		//landing page containers
@@ -100,14 +122,27 @@ var todos = function() {
 		$buttonRegister,
 		$labelLoginPageErrorMessage,
 
+		//storyboard page widgets
+		$sectionStoryBoard,
+		$pStoryBoardHeading,
+		$pStoryBoard,
+		$divStickyNote,
+
 		//feature page widgets
 		$sectionFeatures,
 		$pFeaturesHeading,
 		$pFeatures,
 
+		//tech stack page widgets
+		$sectionTechStack,
+		$pTechStackHeading,
+		$pTechStack,
+
 		//footer widgets
 		$buttonHome,
+		$buttonStoryBoard,
 		$buttonFeatures,
+		$buttonTechStack,
 		$buttonContact,
 
 		//function names
@@ -137,8 +172,22 @@ var todos = function() {
 		initElements,
 		deleteTodo,
 		initializeFeaturesPage,
+		initializeTechStackPage,
 		registerFeaturesPageEvents,
-		enforceMaxTodos;
+		initializeTestStoryBoardPage,
+		initializeStoryBoardPage,
+		registerStoryBoardPageEvents,
+		enforceMaxTodos,
+
+		//sticky note functions
+		makeNote, //constructor
+
+		//sticky note callback functions
+		noteEdited,
+		noteCreated,
+		noteDeleted,
+		noteMoved,					
+		noteResized;					
 
 	initElements = function() {
 		console.log("initElements");
@@ -208,26 +257,32 @@ var todos = function() {
 		$cbTodoStr = "<input type='checkbox' id='cbTodo' title='Mark Completed'></input>";
 		$iconDeleteStr = '<span class="icon-delete ui-icon ui-icon-circle-close" title="Delete"></span>';
 
-		//Create feature page elements
+		//Create storyboard page elements
+		$sectionStoryBoard = $("<section id='sectionStoryBoard'></section>");
+		$pStoryBoardHeading = $("<p id='pStoryBoardHeading'>Storyboard</p>");
+		$pStoryBoard = $("<p id='pStoryBoard'></p>");
+		$divStickyNote = $("<div id='divStickyNote'></div>");
+
+		//Initialize feature page elements
 		$sectionFeatures = $("<section id='sectionFeatures'></section>");
 		$pFeaturesHeading = $("<p id='pFeaturesHeading'>Features</p>");
 		$pFeatures = $("<p id='pFeatures'>" 
 			+ "<ul>"
 			+		"<li>v0.1.4</li>"
 			+ 	"<ul>"
-			+			"<li>Added footer w/ Home, Features, & Contact buttons</li>"
-			+			"<li>Added features section</li>"
+			+			"<li>Footer w/ Home, Features, & Contact buttons</li>"
+			+			"<li>Limit todos to 20</li>"
 			+ 	"</ul>"
 			+		"<li>v0.1.3</li>"
 			+ 	"<ul>"
+			+			"<li>Ability to delete completed undo</li>"
+			+			"<li>Password encryption</li>"
 			+			"<li>Added README.md</li>"
-			+			"<li>Added ability to delete completed undo</li>"
-			+			"<li>Added password encryption</li>"
 			+ 	"</ul>"
 			+		"<li>v0.1.2</li>"
 			+ 	"<ul>"
-			+			"<li>Added persistence via MongoDB</li>"
-			+			"<li>Added security (authentication and authorization)</li>"
+			+			"<li>Persistence via MongoDB</li>"
+			+			"<li>Security (authentication and authorization)</li>"
 			+ 	"</ul>"
 			+		"<li>v0.1.1</li>"
 			+ 	"<ul>"
@@ -240,9 +295,29 @@ var todos = function() {
 			+ "</ul>"
 			+ "</p>");
 
-		//Create footer elements
+		//Initialize tech stack page elements
+		$sectionTechStack = $("<section id='sectionTechStack'></section>");
+		$pTechStackHeading = $("<p id='pTechStackHeading'>Features</p>");
+		$pTechStack = $("<p id='pTechStack'>" 
+			+ "<ul>"
+			+		"<li>HTML</li>"
+			+		"<li>CSS</li>"
+			+		"<li>JavaScript</li>"
+			+		"<li>jQuery/AJAX/JSON</li>"
+			+		"<li>jQueryUI</li>"
+			+		"<li>Node.js</li>"
+			+		"<li>BCrypt</li>"
+			+		"<li>Mongoose</li>"
+			+		"<li>MongoDB</li>"
+			+		"<li>Heroku PaaS/SSL</li>"
+			+ "</ul>"
+			+ "</p>");
+
+		//Initialize footer elements
 		$buttonHome = $("<button class='buttonFooter' id='buttonHome'>Home</button>");
+		$buttonStoryBoard = $("<button class='buttonFooter' id='buttonStoryBoard'>Storyboard</button>");
 		$buttonFeatures = $("<button class='buttonFooter' id='buttonFeatures'>Features</button>");
+		$buttonTechStack = $("<button class='buttonFooter' id='buttonTechStack'>Tech Stack</button>");
 		$buttonContact = $("<button class='buttonFooter' id='buttonContact'>Contact</button>");
 	};
 
@@ -281,8 +356,20 @@ var todos = function() {
 			initializeLandingPage(true,true);
 		});  	
 
+		$('button#buttonStoryBoard').on("click", function(event) {
+			if (boolLoggedIn) {
+				initializeStoryBoardPage();			
+			} else {
+				initializeTestStoryBoardPage();			
+			};
+		});
+
 		$('button#buttonFeatures').on("click", function(event) {
 			initializeFeaturesPage();			
+		});
+
+		$('button#buttonTechStack').on("click", function(event) {
+			initializeTechStackPage();			
 		});
 
 		$("#buttonHome").on('click', function(event) {
@@ -341,6 +428,9 @@ var todos = function() {
 				printTodos();		
 				$("#inputTodo").focus();
 		});
+	};
+
+	registerStoryBoardPageEvents = function() {
 	};
 
 	registerFeaturesPageEvents = function() {
@@ -502,7 +592,9 @@ var todos = function() {
 		
 		//Footer
 		$sectionFooter.append($buttonHome);
+		$sectionFooter.append($buttonStoryBoard);
 		$sectionFooter.append($buttonFeatures);
+		$sectionFooter.append($buttonTechStack);
 		$sectionFooter.append($buttonContact);
 		$divFooter.append($sectionFooter);
 		$("body").append($divFooter);
@@ -951,6 +1043,116 @@ var todos = function() {
 		});
 	};
 
+	makeNote = function(id, text, pos_y) {
+		console.log("makeNote "+id);
+		var newNote = Object.create(note);
+		newNote.id = id;
+		newNote.text = text;
+		newNote.pos_y = pos_y;
+		return newNote;
+	};
+
+	initializeStoryBoardPage = function() {
+		console.log("initializeStoryBoardPage");
+		var new_pos_y = null;
+		stickyNoteOptions.notes.length = 0; //empty out notes array
+		$("body").empty();		
+		initElements();
+		initializeLandingPage(false,true);
+		$divLeft.empty();		
+		$sectionStoryBoard.append($pStoryBoardHeading);
+		$sectionStoryBoard.append($pStoryBoard);
+		$sectionStoryBoard.append($divStickyNote);
+		$divLeft.append($sectionStoryBoard);
+		$("body").prepend($divLeft);
+
+		todosStr = "";
+		completedTodosStr = "";
+		notesCount = 0;
+
+		/*
+		note = {
+			"id": -1,
+		  "text": "",
+			"pos_x": 5,
+			"pos_y": 5,	
+			"width": 120,							
+			"height": 60,													
+		},
+		*/
+		todosList.forEach(function(todo_div){
+			console.log("forEach notesCount="+notesCount);
+			if (notesCount <= notesMaxPerColumnCount - 1) {  
+				todosStr += todo_div.find("label").text() + ",";
+				if (notesCount === 0) {
+					new_pos_y = note.pos_y;					
+				} else {
+					//notesCount new_pos_y
+					//0 5
+					//1 5 + 60 + 5 = 70
+					//2 5 + (60+5)*2 = 135 = 70 + 65 (135)
+					new_pos_y = note.pos_y + ((note.height + note.pos_y) * notesCount);					
+				};
+				console.log('new_pos_y='+new_pos_y);
+				stickyNoteOptions.notes.push(makeNote(
+					notesCount, 
+					todo_div.find("label").text(),
+					new_pos_y
+				));
+				console.log('notesCount='+notesCount)
+				notesCount = notesCount + 1;
+				console.log("notesCount incremented to="+notesCount);
+			};
+		});
+		console.log("notes created for todos:" + todosStr);
+
+		completedTodosList.forEach(function(todo_div){
+			if (notesCount <= notesMaxPerColumnCount - 1) {  
+				completedTodosStr += todo_div.find("label").text() + ",";
+				if (notesCount === 0) {
+					new_pos_y = note.pos_y;					
+				} else {
+					new_pos_y = note.pos_y + ((note.height + note.pos_y) * notesCount);					
+				};
+				console.log('new_pos_y='+new_pos_y);
+				stickyNoteOptions.notes.push(makeNote(
+					notesCount, 
+					todo_div.find("label").text(),
+					new_pos_y
+				));
+				console.log('notesCount='+notesCount)
+				notesCount = notesCount + 1;
+				console.log("notesCount incremented to="+notesCount);
+			};
+		});
+		console.log("notes created for completed todos:" + completedTodosStr);
+
+		$("#divStickyNote").stickyNotes(stickyNoteOptions);
+		//registerStoryBoardPageEvents();
+	};
+
+	initializeTestStoryBoardPage = function() {
+		console.log("initializeTestStoryBoardPage");
+		var new_pos_y = null;
+		stickyNoteOptions.notes.length = 0; //empty out notes array
+		$("body").empty();		
+		initElements();
+		initializeLandingPage(false,true);
+		$divLeft.empty();		
+		$sectionStoryBoard.append($pStoryBoardHeading);
+		$sectionStoryBoard.append($pStoryBoard);
+		$sectionStoryBoard.append($divStickyNote);
+		$divLeft.append($sectionStoryBoard);
+		$("body").prepend($divLeft);
+		stickyNoteOptions.notes.push(makeNote(
+			0, 
+			'Testing: One Two Three Four Five Six ...',
+			note.pos_y
+		));
+		$("#divStickyNote").stickyNotes(stickyNoteOptions);
+		//registerStoryBoardPageEvents();
+	};
+
 	initializeFeaturesPage = function() {
 		console.log("initializeFeaturesPage");
 		$("body").empty();		
@@ -960,6 +1162,19 @@ var todos = function() {
 		$sectionFeatures.append($pFeaturesHeading);
 		$sectionFeatures.append($pFeatures);
 		$divLeft.append($sectionFeatures);
+		$("body").prepend($divLeft);
+		//registerFeaturePageEvents();
+	};
+
+	initializeTechStackPage = function() {
+		console.log("initializeTechStackPage");
+		$("body").empty();		
+		initElements();
+		initializeLandingPage(false,true);
+		$divLeft.empty();		
+		$sectionFeatures.append($pTechStackHeading);
+		$sectionFeatures.append($pTechStack);
+		$divLeft.append($sectionTechStack);
 		$("body").prepend($divLeft);
 		//registerFeaturePageEvents();
 	};
@@ -985,6 +1200,26 @@ var todos = function() {
 		//$sectionTodoInput.find('label').remove();
 		//$sectionTodoInput.append($labelNumTodos);
 	};
+
+	noteEdited = function(note) {
+		console.log("Edited note with id " + note.id + ", new text is: " + note.text);
+	};
+
+	noteCreated = function(note) {
+		console.log("Created note with id " + note.id + ", text is: " + note.text);
+	};
+	
+	noteDeleted = function(note) {
+		console.log("Deleted note with id " + note.id + ", text is: " + note.text);
+	};
+
+	noteMoved = function(note) {
+		console.log("Moved note with id " + note.id + ", text is: " + note.text);
+	};
+
+	noteResized = function(note) {
+		console.log("Resized note with id " + note.id + ", text is: " + note.text);
+	};					
 		
 	getCookies();	
 	initializeLandingPage(true,true);
