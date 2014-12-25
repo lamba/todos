@@ -3,7 +3,6 @@
 h1,h2,h3,h4,h5,h6,p { margin-bottom:10px; }
 ol,ul,dl { margin-left:.5em; }
 
-/* Standard selectors */
 body { width:900px; margin:auto; height:100%; overflow:hidden;	background-color:#eee; font-size:125%; }
 section { position:relative; top:2em; left:2em; bottom:2em; right:2em; margin:1em; font-size:.8em; }
 
@@ -40,6 +39,5 @@ p.email, p#pGitHub { color:blue; }
 
 div.divFooter { clear:both; padding-top:.5em; }
 section#sectionFooter { background-color:#aaa; top:0em;}
-
-section#sectionFeatures {}
 #pFeaturesHeading, #pStoryBoardHeading, #pTechStackHeading { font-weight:bold; }
+.buttonFooterActive { color:#fff; background:#777; }

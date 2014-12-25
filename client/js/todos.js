@@ -178,6 +178,7 @@ var todos = function() {
 		initializeStoryBoardPage,
 		registerStoryBoardPageEvents,
 		enforceMaxTodos,
+		makeFooterButtonActive,
 
 		//sticky note functions
 		makeNote, //constructor
@@ -314,7 +315,7 @@ var todos = function() {
 			+ "</p>");
 
 		//Initialize footer elements
-		$buttonHome = $("<button class='buttonFooter' id='buttonHome'>Home</button>");
+		$buttonHome = $("<button class='buttonFooter buttonFooterActive' id='buttonHome'>Home</button>");
 		$buttonStoryBoard = $("<button class='buttonFooter' id='buttonStoryBoard'>Storyboard</button>");
 		$buttonFeatures = $("<button class='buttonFooter' id='buttonFeatures'>Features</button>");
 		$buttonTechStack = $("<button class='buttonFooter' id='buttonTechStack'>Tech Stack</button>");
@@ -536,6 +537,9 @@ var todos = function() {
 	initializeLandingPage = function(left, right) {
 		console.log("initializeLandingPage");
 		initElements();
+		if (left && right) {
+			makeFooterButtonActive($buttonHome);
+		};
 		$("body").empty();		
 		if (left) {
 			$labelWelcome.append(userEmail + "!<br>");
@@ -1128,7 +1132,19 @@ var todos = function() {
 		console.log("notes created for completed todos:" + completedTodosStr);
 
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
+		makeFooterButtonActive($buttonStoryBoard);
 		//registerStoryBoardPageEvents();
+	};
+
+	makeFooterButtonActive = function(button) {
+		console.log('makeFooterButtonActive');
+		$buttonHome.removeClass('buttonFooterActive');
+		$buttonStoryBoard.removeClass('buttonFooterActive');
+		$buttonFeatures.removeClass('buttonFooterActive');
+		$buttonTechStack.removeClass('buttonFooterActive');
+		$buttonContact.removeClass('buttonFooterActive');
+
+		button.addClass('buttonFooterActive');
 	};
 
 	initializeTestStoryBoardPage = function() {
@@ -1150,6 +1166,7 @@ var todos = function() {
 			note.pos_y
 		));
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
+		makeFooterButtonActive($buttonStoryBoard);
 		//registerStoryBoardPageEvents();
 	};
 
@@ -1163,6 +1180,7 @@ var todos = function() {
 		$sectionFeatures.append($pFeatures);
 		$divLeft.append($sectionFeatures);
 		$("body").prepend($divLeft);
+		makeFooterButtonActive($buttonFeatures);
 		//registerFeaturePageEvents();
 	};
 
@@ -1176,6 +1194,7 @@ var todos = function() {
 		$sectionTechStack.append($pTechStack);
 		$divLeft.append($sectionTechStack);
 		$("body").prepend($divLeft);
+		makeFooterButtonActive($buttonTechStack);
 		//registerFeaturePageEvents();
 	};
 
