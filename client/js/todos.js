@@ -297,7 +297,7 @@ var todos = function() {
 
 		//Initialize tech stack page elements
 		$sectionTechStack = $("<section id='sectionTechStack'></section>");
-		$pTechStackHeading = $("<p id='pTechStackHeading'>Features</p>");
+		$pTechStackHeading = $("<p id='pTechStackHeading'>Tech Stack</p>");
 		$pTechStack = $("<p id='pTechStack'>" 
 			+ "<ul>"
 			+		"<li>HTML</li>"
@@ -1172,8 +1172,8 @@ var todos = function() {
 		initElements();
 		initializeLandingPage(false,true);
 		$divLeft.empty();		
-		$sectionFeatures.append($pTechStackHeading);
-		$sectionFeatures.append($pTechStack);
+		$sectionTechStack.append($pTechStackHeading);
+		$sectionTechStack.append($pTechStack);
 		$divLeft.append($sectionTechStack);
 		$("body").prepend($divLeft);
 		//registerFeaturePageEvents();
