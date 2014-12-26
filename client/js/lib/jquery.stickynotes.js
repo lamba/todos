@@ -7,6 +7,7 @@
 		jQuery.fn.stickyNotes.options = jQuery.extend({}, jQuery.fn.stickyNotes.defaults, options);
 		jQuery.fn.stickyNotes.prepareContainer(this);
 		jQuery.each(jQuery.fn.stickyNotes.options.notes, function(index, note){
+			console.log('stickyNotes() => note.id='+note.id+','+'note.text='+note.text+','+'note.pos_y='+note.pos_y+','+'note.pos_x='+note.pos_x);
 			jQuery.fn.stickyNotes.renderNote(note);
 			jQuery.fn.stickyNotes.notes.push(note);
 		});

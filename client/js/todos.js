@@ -65,6 +65,7 @@ var todos = function() {
 		},
 		notesCount,
 		notesMaxPerColumnCount = 7,
+		notesMaxColumnCount = 3,
 
 		//jQuery elements
 		//landing page containers
@@ -182,6 +183,7 @@ var todos = function() {
 
 		//sticky note functions
 		makeNote, //constructor
+		addNote, //add note to stickyNoteOptions
 
 		//sticky note callback functions
 		noteEdited,
@@ -1047,18 +1049,45 @@ var todos = function() {
 		});
 	};
 
-	makeNote = function(id, text, pos_y) {
+	makeNote = function(id, text, pos_y, pos_x) {
 		console.log("makeNote "+id);
 		var newNote = Object.create(note);
 		newNote.id = id;
 		newNote.text = text;
 		newNote.pos_y = pos_y;
+		newNote.pos_x = pos_x;
 		return newNote;
+	};
+
+	addNote = function(notesCnt, text) {
+		var 
+			new_pos_y = null,
+			new_pos_x = null;
+		//notesCount => new_pos_y
+		//0 => 5 + ((60 + 5) * 0) = 5
+		//1 => 5 + ((60 + 5) * 1) = 70
+		//2 => 5 + ((60 + 5) * 2) = 135
+		//notesCount new_pos_x
+		//0 => 5 + ((120 + 5) * 0) = 5
+		//7 => 5 + ((120 + 5) * 1) = 130
+		new_pos_y = note.pos_y + ((note.height + note.pos_y) * (notesCnt % notesMaxPerColumnCount));					
+		console.log('new_pos_y='+new_pos_y);
+		new_pos_x = note.pos_x + ((note.width + note.pos_x) * (Math.floor(notesCnt/notesMaxPerColumnCount)));					
+		console.log('new_pos_x='+new_pos_x);
+		stickyNoteOptions.notes.push(makeNote(
+			notesCnt, 
+			text,
+			new_pos_y,
+			new_pos_x
+		));
 	};
 
 	initializeStoryBoardPage = function() {
 		console.log("initializeStoryBoardPage");
-		var new_pos_y = null;
+		var 
+			new_pos_y = null,
+			new_pos_x = null,
+			notesColumnCount = 1;
 		stickyNoteOptions.notes.length = 0; //empty out notes array
 		$("body").empty();		
 		initElements();
@@ -1074,35 +1103,11 @@ var todos = function() {
 		completedTodosStr = "";
 		notesCount = 0;
 
-		/*
-		note = {
-			"id": -1,
-		  "text": "",
-			"pos_x": 5,
-			"pos_y": 5,	
-			"width": 120,							
-			"height": 60,													
-		},
-		*/
 		todosList.forEach(function(todo_div){
 			console.log("forEach notesCount="+notesCount);
-			if (notesCount <= notesMaxPerColumnCount - 1) {  
+			if (notesCount <= (notesMaxPerColumnCount * notesMaxColumnCount) - 1) {  
 				todosStr += todo_div.find("label").text() + ",";
-				if (notesCount === 0) {
-					new_pos_y = note.pos_y;					
-				} else {
-					//notesCount new_pos_y
-					//0 5
-					//1 5 + 60 + 5 = 70
-					//2 5 + (60+5)*2 = 135 = 70 + 65 (135)
-					new_pos_y = note.pos_y + ((note.height + note.pos_y) * notesCount);					
-				};
-				console.log('new_pos_y='+new_pos_y);
-				stickyNoteOptions.notes.push(makeNote(
-					notesCount, 
-					todo_div.find("label").text(),
-					new_pos_y
-				));
+				addNote(notesCount, todo_div.find("label").text());
 				console.log('notesCount='+notesCount)
 				notesCount = notesCount + 1;
 				console.log("notesCount incremented to="+notesCount);
@@ -1111,19 +1116,9 @@ var todos = function() {
 		console.log("notes created for todos:" + todosStr);
 
 		completedTodosList.forEach(function(todo_div){
-			if (notesCount <= notesMaxPerColumnCount - 1) {  
+			if (notesCount <= (notesMaxPerColumnCount * notesMaxColumnCount) - 1) {  
 				completedTodosStr += todo_div.find("label").text() + ",";
-				if (notesCount === 0) {
-					new_pos_y = note.pos_y;					
-				} else {
-					new_pos_y = note.pos_y + ((note.height + note.pos_y) * notesCount);					
-				};
-				console.log('new_pos_y='+new_pos_y);
-				stickyNoteOptions.notes.push(makeNote(
-					notesCount, 
-					todo_div.find("label").text(),
-					new_pos_y
-				));
+				addNote(notesCount, todo_div.find("label").text());
 				console.log('notesCount='+notesCount)
 				notesCount = notesCount + 1;
 				console.log("notesCount incremented to="+notesCount);
