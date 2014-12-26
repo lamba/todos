@@ -226,8 +226,8 @@ var todos = function() {
 			+ "<li>Add a test framework and suite of tests"
 			+	"<li>Manage content overflow"
 			+	"<li>Make 'show history' configurable"
-			+	"<li>Allow inline editing of todos"
-			+ "<li>Center, RD, Hist, SVG(d3), Canvas(proc), WebGL"
+			+	"<li>Allow inline editing & sequencing of todos"
+			+ "<li>RD, Hist"
 			+ "</p>");
 		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
 		$pGitHub = $("<p id='pGitHub'>GitHub: github DOT com SLASH lamba</p>");
@@ -271,6 +271,11 @@ var todos = function() {
 		$pFeaturesHeading = $("<p id='pFeaturesHeading'>Features</p>");
 		$pFeatures = $("<p id='pFeatures'>" 
 			+ "<ul>"
+			+		"<li>v0.1.5</li>"
+			+ 	"<ul>"
+			+			"<li>Display storyboard version of todos</li>"
+			+			"<li>Display active/selected footer button</li>"
+			+ 	"</ul>"
 			+		"<li>v0.1.4</li>"
 			+ 	"<ul>"
 			+			"<li>Footer w/ Home, Features, & Contact buttons</li>"
@@ -303,12 +308,12 @@ var todos = function() {
 		$pTechStackHeading = $("<p id='pTechStackHeading'>Tech Stack</p>");
 		$pTechStack = $("<p id='pTechStack'>" 
 			+ "<ul>"
-			+		"<li>HTML</li>"
-			+		"<li>CSS</li>"
-			+		"<li>JavaScript</li>"
+			+		"<li>HTML (51 lines)</li>"
+			+		"<li>CSS (43 lines)</li>"
+			+		"<li>JavaScript (1,200 lines)</li>"
 			+		"<li>jQuery/AJAX/JSON</li>"
 			+		"<li>jQueryUI</li>"
-			+		"<li>Node.js</li>"
+			+		"<li>Node.js (400 lines)</li>"
 			+		"<li>BCrypt</li>"
 			+		"<li>Mongoose</li>"
 			+		"<li>MongoDB</li>"
@@ -358,6 +363,17 @@ var todos = function() {
 			boolLoggedIn = false;
 			initializeLandingPage(true,true);
 		});  	
+
+		$('button.buttonFooter').hover(
+			function(event) {
+				console.log('buttonFooterHover mouseover');
+				$(this).addClass('buttonFooterHover');			
+			}, 
+			function(event) {
+				console.log('buttonFooterHover mouseout');
+				$(this).removeClass('buttonFooterHover');			
+			}
+		);
 
 		$('button#buttonStoryBoard').on("click", function(event) {
 			if (boolLoggedIn) {

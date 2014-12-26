@@ -41,3 +41,4 @@ div.divFooter { clear:both; padding-top:.5em; }
 section#sectionFooter { background-color:#aaa; top:0em;}
 #pFeaturesHeading, #pStoryBoardHeading, #pTechStackHeading { font-weight:bold; }
 .buttonFooterActive { color:#fff; background:#777; }
+.buttonFooterHover { background:#abc }
