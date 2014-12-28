@@ -25,6 +25,7 @@ h1 { margin-top:.5em; position:relative; border-top:solid 1px #ccc; width:10%; h
 #cbTodo { margin-left:.5em; }
 .ui-icon { background-image:url(../img/jquery-ui/ui-icons_a9a9a9_256x240.png)}
 .todos { margin-left:2em; }
+#divStickyNote { width:27em; height:30em; }
 
 div.right { float:right; width:49%}
 section.photos { height:10em; }
@@ -35,10 +36,8 @@ section.about p { width:20em; }
 section.about li { font-weight:regular; }
 p.email, p#pGitHub { color:blue; }
 
-#divStickyNote { width:27em; height:30em; }
-
 div.divFooter { clear:both; padding-top:.5em; }
 section#sectionFooter { background-color:#aaa; top:0em;}
 #pFeaturesHeading, #pStoryBoardHeading, #pTechStackHeading { font-weight:bold; }
 .buttonFooterActive { color:#fff; background:#777; }
-.buttonFooterHover { background:#abc }
+.buttonHover:not(.buttonFooterActive) { background:#abc } /* intended to work only if element is a button but not currently active (e.g. footer button) */

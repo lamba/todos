@@ -7,7 +7,7 @@
 		jQuery.fn.stickyNotes.options = jQuery.extend({}, jQuery.fn.stickyNotes.defaults, options);
 		jQuery.fn.stickyNotes.prepareContainer(this);
 		jQuery.each(jQuery.fn.stickyNotes.options.notes, function(index, note){
-			console.log('stickyNotes() => note.id='+note.id+','+'note.text='+note.text+','+'note.pos_y='+note.pos_y+','+'note.pos_x='+note.pos_x);
+			console.log('stickyNotes() => note.id='+note.id+','+'note.text='+note.text+','+'note.pos_y='+note.pos_y+','+'note.pos_x='+note.pos_y);
 			jQuery.fn.stickyNotes.renderNote(note);
 			jQuery.fn.stickyNotes.notes.push(note);
 		});
@@ -202,11 +202,15 @@
 	}
 	
 	jQuery.fn.stickyNotes.movedNote = function(note_id) {
+		console.log('stickyNotes.movedNote');
 		var note = jQuery.fn.stickyNotes.getNote(note_id);
 		note.pos_x=jQuery("#note-" + note_id).css("left").replace(/px/, "");
 		note.pos_y=jQuery("#note-" + note_id).css("top").replace(/px/, "");
-		if (jQuery.fn.stickyNotes.options.moveCallback) {
-			jQuery.fn.stickyNotes.options.moveCallback(note);
+		console.log('jQuery.fn.stickyNotes.options.moveCallback='+jQuery.fn.stickyNotes.options.moveCallback);		
+		if (/*typeof jQuery.fn.stickyNotes.options.moveCallback === 'function'*/ true) {
+			console.log('stickyNotes.movedNote moveCallback === function');
+			todos.noteMoved(note);
+			//jQuery.fn.stickyNotes.options.moveCallback(note);
 		}		
 	}
 	

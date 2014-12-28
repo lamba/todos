@@ -1,5 +1,5 @@
-//Written by Puneet Singh Lamba
-//Inspiration by Michael Mikowski, Josh Powell, Semmy Purewal, and many others
+//Authored by Puneet Singh Lamba
+//Inspiration by Semmy Purewal, Michael Mikowski, Josh Powell, and many others
 
 /*jslint
   browser:true,
@@ -227,7 +227,7 @@ var todos = function() {
 			+	"<li>Manage content overflow"
 			+	"<li>Make 'show history' configurable"
 			+	"<li>Allow inline editing & sequencing of todos"
-			+ "<li>RD, Hist"
+			+ "<li>RD, Hist, Caching"
 			+ "</p>");
 		$pEmail = $("<p class='email'>Email: puneet AT inventica DOT com</p>");
 		$pGitHub = $("<p id='pGitHub'>GitHub: github DOT com SLASH lamba</p>");
@@ -364,14 +364,14 @@ var todos = function() {
 			initializeLandingPage(true,true);
 		});  	
 
-		$('button.buttonFooter').hover(
+		$('button').hover(
 			function(event) {
-				console.log('buttonFooterHover mouseover');
-				$(this).addClass('buttonFooterHover');			
+				console.log('buttonHover mouseover');
+				$(this).addClass('buttonHover');			
 			}, 
 			function(event) {
-				console.log('buttonFooterHover mouseout');
-				$(this).removeClass('buttonFooterHover');			
+				console.log('buttonHover mouseout');
+				$(this).removeClass('buttonHover');			
 			}
 		);
 
@@ -831,6 +831,10 @@ var todos = function() {
 				});		
 			promises.push(dfd);
 		});
+		//how to return multiple promises
+		//perhaps the most awesome/complex javascript i've ever used in a real program
+		//apply let's us call a function with our choice of caller and arguments
+		//apply takes two parameters: (1) the value that should be bound to 'this' (caller) (2) an array of parameters
 		return $.when.apply(undefined, promises).promise(); //return promise, awaiting resolve
 	};
 	
@@ -1065,7 +1069,7 @@ var todos = function() {
 		});
 	};
 
-	makeNote = function(id, text, pos_y, pos_x) {
+	makeNote = function(id, text, pos_y, pos_x) { //factory pattern from Mikowski (2014), page 39
 		console.log("makeNote "+id);
 		var newNote = Object.create(note);
 		newNote.id = id;
@@ -1174,7 +1178,8 @@ var todos = function() {
 		stickyNoteOptions.notes.push(makeNote(
 			0, 
 			'Testing: One Two Three Four Five Six ...',
-			note.pos_y
+			note.pos_y,
+			note.pos_x
 		));
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
 		makeFooterButtonActive($buttonStoryBoard);
@@ -1255,7 +1260,23 @@ var todos = function() {
 	initializeLandingPage(true,true);
 	getPhotos();
 	
-};	
+	return {
+		noteMoved: noteMoved
+	};
+
+//adding these round brackets at the end, below, turns the function declaration into a function expression 
+//the result of which is stored in the variable todos as a closure created by the returned function noteMoved 
+//accessed from the sticky note jQuery plugin using the syntax todos.noteMoved()
+//-what causes a reference to the variable todos to be retained? see Mikowski page 54
+//-what's the difference between (a) and (b)? see ppt or http://benalman.com/news/2010/11/immediately-invoked-function-expression/
+//	(a)
+//		var a = function foo() {}();
+//	(b)
+//		(function bar() {})(...);	
+//
+//option (a) seems to work fine if i hard code the callback in the jquery plugin
+//passing in the callback to the jquery plugin as part of options doesn't seem to work no matter what i try
+}(); 
   
 //Start app once DOM is ready
 $(todos);
