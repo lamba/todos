@@ -66,6 +66,7 @@ var todos = function() {
 		notesCount,
 		notesMaxPerColumnCount = 7,
 		notesMaxColumnCount = 3,
+		notesMoveTargetAccuracy = 10,
 
 		//jQuery elements
 		//landing page containers
@@ -184,12 +185,14 @@ var todos = function() {
 		//sticky note functions
 		makeNote, //constructor
 		addNote, //add note to stickyNoteOptions
+		findNearest,
 
 		//sticky note callback functions
 		noteEdited,
 		noteCreated,
 		noteDeleted,
 		noteMoved,					
+		noteMoving,
 		noteResized;					
 
 	initElements = function() {
@@ -310,14 +313,17 @@ var todos = function() {
 			+ "<ul>"
 			+		"<li>HTML (51 lines)</li>"
 			+		"<li>CSS (43 lines)</li>"
-			+		"<li>JavaScript (1,200 lines)</li>"
+			+		"<li>JavaScript (1,300 lines)</li>"
 			+		"<li>jQuery/AJAX/JSON</li>"
 			+		"<li>jQueryUI</li>"
+			+		"<li>Sticky Notes Module (300 lines)</li>"
 			+		"<li>Node.js (400 lines)</li>"
 			+		"<li>BCrypt</li>"
 			+		"<li>Mongoose</li>"
 			+		"<li>MongoDB</li>"
 			+		"<li>Heroku PaaS/SSL</li>"
+			+		"<li>===</li>"
+			+		"<li>Total (2,100 lines)</li>"
 			+ "</ul>"
 			+ "</p>");
 
@@ -1250,18 +1256,65 @@ var todos = function() {
 
 	noteMoved = function(note) {
 		console.log("Moved note with id " + note.id + ", text is: " + note.text);
+		var 
+			nearest_x,
+			nearest_y,
+			nearest;
+		nearest = findNearest(note);
+		if (nearest) {
+			//console.log('processing nearest ' + 'id: ' + nearest.id + ' text: ' + nearest.text);
+			//$('#note-'+note.id).find('textarea').css({'background':'#aaa'});
+			//$('#note-'+note.id).find('textarea').css({'color':'#cba'});
+			//$('#note-'+note.id).find('p').css({'background-color':'#abc'});
+		};
+	};
+
+	noteMoving = function(note) {
+		console.log("Moving note with id " + note.id + ", text is: " + note.text);
+		var	nearest  = findNearest(note);
+		if (nearest) {
+			console.log('processing nearest ' + 'id: ' + nearest.id + ' text: ' + nearest.text);
+			//$('#note-'+note.id).find('textarea').addClass('foundTarget');
+			$('#p-note-'+note.id).addClass('foundTarget');
+			//$('#note-'+note.id).addClass('foundTarget');
+			//$('#note-'+note.id).parent().find('.background').addClass('foundTarget');
+		} else {
+			//$('#note-'+note.id).find('textarea').removeClass('foundTarget');
+			$('#p-note-'+note.id).removeClass('foundTarget');
+			//$('#note-'+note.id).removeClass('foundTarget');
+		};
 	};
 
 	noteResized = function(note) {
 		console.log("Resized note with id " + note.id + ", text is: " + note.text);
 	};					
 		
+	findNearest = function(note) { 
+		console.log('findNearest');
+		var match = null;
+		stickyNoteOptions.notes.forEach(function(candidate){
+			if ((Math.abs(note.pos_x - candidate.pos_x) < notesMoveTargetAccuracy) && (Math.abs(note.pos_y - candidate.pos_y) < notesMoveTargetAccuracy)) {
+				if (note.id !== candidate.id) { //don't match the note being moved
+					match = candidate;
+					console.log('found nearest ' + 'id: ' + candidate.id + ' text: ' + candidate.text);
+				};
+			};
+		});		
+		if (match === null) {
+			console.log('did not find nearest');
+			return false;				
+		} else {
+			return match;
+		};
+	};
+
 	getCookies();	
 	initializeLandingPage(true,true);
 	getPhotos();
 	
 	return {
-		noteMoved: noteMoved
+		noteMoved: noteMoved,
+		noteMoving: noteMoving
 	};
 
 //adding these round brackets at the end, below, turns the function declaration into a function expression 
