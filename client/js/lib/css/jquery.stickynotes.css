@@ -1,8 +1,9 @@
 html, body { height:100%; }
 #sticky-container { background:url(../images/bg_wood.jpg) repeat-x scroll 0 0; position:relative; height:100%; }
 #sticky-container button { position:absolute; top:0px; right:0px; margin:4px; padding:4px 10px 4px 7px;	border-color:#EEEEEE #DEDEDE #DEDEDE #EEEEEE; 
-	border-style:solid; border-width:1px;	font-weight:bold; color:#529214; }
-#sticky-container button:hover { background-color:#E6EFC2; border:1px solid #C6D880; color:#529214;	}
+	border-style:solid; border-width:1px; font-weight:bold; color:#aaa; }
+/*#sticky-container button:hover { background-color:#E6EFC2; border:1px solid #C6D880; color:#529214; width:3em; }*/
+button#add_note { width:3em; height:3em; }
 #sticky-container textarea { outline:0 none; background-color:transparent; border:none; font-family:'Comic Sans MS',Textile,cursive; font-size:12px; 
 	overflow:hidden; color:#999; padding:5px 5px 5px 5px; float:left; }
 #sticky-container p { font-family:'Comic Sans MS',Textile,cursive;	font-size:12px; overflow:hidden; padding:10px 10px 10px 10px; display:block; 

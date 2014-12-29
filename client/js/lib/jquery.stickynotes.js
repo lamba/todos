@@ -41,6 +41,7 @@
 		jQuery(container).append('<div id="sticky-container" class="sticky-container"></div>');
 		if (jQuery.fn.stickyNotes.options.controls) {
 			jQuery("#sticky-container").html('<button id="add_note">Add Note</button>');			
+			jQuery('#add_note').prop('disabled', true);		
 			jQuery("#add_note").click(function() {
 				jQuery.fn.stickyNotes.createNote();
 				return false;
