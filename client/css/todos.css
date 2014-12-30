@@ -10,8 +10,8 @@ a:enabled[href], input:enabled[type=checkbox], button:enabled, .icon-delete { cu
 label { vertical-align:top; }
 #labelOr { vertical-align:bottom; }
 button { margin-left:.2em; width:3em; height:1.5em; line-height:1em; }
-button.login, .register, #buttonLogout, .goToLoginPage { width:7em; margin-top:.5em; }
-button.buttonFooter { width:7em; margin: .3em .2em; }
+button.login, .register, #buttonLogout, .goToLoginPage { width:8em; margin-top:.5em; }
+button.buttonFooter { width:8em; margin: .3em .2em; }
 
 div.left { float:left; width:49%}
 p.app-title { font-size:1.5em; font-weight:bold; }
