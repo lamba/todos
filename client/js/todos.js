@@ -266,7 +266,7 @@ var todos = function() {
 
 		//Create storyboard page elements
 		$sectionStoryBoard = $("<section id='sectionStoryBoard'></section>");
-		$pStoryBoardHeading = $("<p id='pStoryBoardHeading'>Storyboard...</p>");
+		$pStoryBoardHeading = $("<p id='pStoryBoardHeading'>Storyboard</p>");
 		$pStoryBoardSubheading = $("<p id='pStoryBoardSubheading'> (database integration pending)</p>");
 		$pStoryBoard = $("<p id='pStoryBoard'></p>");
 		$divStickyNote = $("<div id='divStickyNote'></div>");
