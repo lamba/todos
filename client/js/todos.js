@@ -127,6 +127,7 @@ var todos = function() {
 		//storyboard page widgets
 		$sectionStoryBoard,
 		$pStoryBoardHeading,
+		$pStoryBoardSubheading,
 		$pStoryBoard,
 		$divStickyNote,
 
@@ -265,7 +266,8 @@ var todos = function() {
 
 		//Create storyboard page elements
 		$sectionStoryBoard = $("<section id='sectionStoryBoard'></section>");
-		$pStoryBoardHeading = $("<p id='pStoryBoardHeading'>Storyboard</p>");
+		$pStoryBoardHeading = $("<p id='pStoryBoardHeading'>Storyboard...</p>");
+		$pStoryBoardSubheading = $("<p id='pStoryBoardSubheading'> (database integration pending)</p>");
 		$pStoryBoard = $("<p id='pStoryBoard'></p>");
 		$divStickyNote = $("<div id='divStickyNote'></div>");
 
@@ -1120,6 +1122,7 @@ var todos = function() {
 		initializeLandingPage(false,true);
 		$divLeft.empty();		
 		$sectionStoryBoard.append($pStoryBoardHeading);
+		$sectionStoryBoard.append($pStoryBoardSubheading);
 		$sectionStoryBoard.append($pStoryBoard);
 		$sectionStoryBoard.append($divStickyNote);
 		$divLeft.append($sectionStoryBoard);
@@ -1177,6 +1180,7 @@ var todos = function() {
 		initializeLandingPage(false,true);
 		$divLeft.empty();		
 		$sectionStoryBoard.append($pStoryBoardHeading);
+		$sectionStoryBoard.append($pStoryBoardSubheading);
 		$sectionStoryBoard.append($pStoryBoard);
 		$sectionStoryBoard.append($divStickyNote);
 		$divLeft.append($sectionStoryBoard);
