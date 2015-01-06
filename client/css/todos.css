@@ -46,10 +46,10 @@ section#sectionFooter { background-color:#aaa; /*top:0em;*/}
 @media screen and (max-width:600px) {
 	html, body { height:100%; }
 	body { width:100%; }	
-	section { /*overflow:auto;*/ }
-	div.left { /*overflow:visible;*/ width:100%;}
+	section {  }
+	div.left { width:100%;}
 	div.right { display:none; }
 	div.divFooter { width:8em; margin:2em; }
 	button.buttonFooter { margin:.5em .5em; }
-	#divStickyNote { /*height:100%;*/ }
+	#divStickyNote { height:40em; }
 }
