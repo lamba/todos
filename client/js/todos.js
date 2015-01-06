@@ -44,6 +44,7 @@ var todos = function() {
 		numTodos = 0,
 		maxTodos = 20,
 		mqSmall = window.matchMedia("(max-width:600px)"),
+		mqPrevious, 
 
 		//sticky note options
 		note = { //prototype
@@ -466,8 +467,11 @@ var todos = function() {
 	registerStoryBoardPageEvents = function() {
 		$(window).resize(function() {
 			console.log("storyboard resized");
-			if (isFooterButtonActive($buttonStoryBoard)) {
+			//only call initializeStoryBoardPage if switching between mqSmall to mqLarge to keep browsers from going crazy
+			if (isFooterButtonActive($buttonStoryBoard) && (((mqPrevious === 'mqSmall') && !mqSmall.matches) || (((mqPrevious === 'mqLarge') && mqSmall.matches)))) {
 				initializeStoryBoardPage();
+			} else {
+				console.log('no need to call initializeStoryBoardPage');
 			};
 		});
 	};
@@ -1132,12 +1136,14 @@ var todos = function() {
 			notesColumnCount = 1;
 		if (mqSmall.matches) {
 			console.log("mqSmall.matches=true");
+			mqPrevious = 'mqSmall';
 			notesMaxColumnCount = notesMaxColumnCountSmall;
 			notesMaxPerColumnCount = notesMaxPerColumnCountSmall;
 			console.log("notesMaxColumnCount="+notesMaxColumnCount);
 			console.log("notesMaxPerColumnCount="+notesMaxPerColumnCount);			
 		} else {
 			console.log("mqSmall.matches=false");
+			mqPrevious = 'mqLarge';
 			notesMaxColumnCount = notesMaxColumnCountLarge;
 			notesMaxPerColumnCount = notesMaxPerColumnCountLarge;
 			console.log("notesMaxColumnCount="+notesMaxColumnCount);
