@@ -37,7 +37,19 @@ section.about li { font-weight:regular; }
 p.email, p#pGitHub { color:blue; }
 
 div.divFooter { clear:both; padding-top:.5em; }
-section#sectionFooter { background-color:#aaa; top:0em;}
+section#sectionFooter { background-color:#aaa; /*top:0em;*/}
 #pFeaturesHeading, #pStoryBoardHeading, #pTechStackHeading { font-weight:bold; }
 .buttonFooterActive { color:#fff; background:#777; }
 .buttonHover:not(.buttonFooterActive) { background:#abc } /* intended to work only if element is a button but not currently active (e.g. footer button) */
+
+/* media queries */
+@media screen and (max-width:600px) {
+	html, body { height:100%; }
+	body { width:100%; }	
+	section { /*overflow:auto;*/ }
+	div.left { /*overflow:visible;*/ }
+	div.right { display:none; }
+	div.divFooter { width:8em; margin:2em; }
+	button.buttonFooter { margin:.5em .5em; }
+	#divStickyNote { /*height:100%;*/ }
+}

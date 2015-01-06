@@ -40,9 +40,10 @@ var todos = function() {
 		boolRememberMe = false,
 		boolLoggedIn = false,
 		savedTodos,
-		todosVersion = "v0.1.5",
+		todosVersion = "v0.1.6",
 		numTodos = 0,
 		maxTodos = 20,
+		mqSmall = window.matchMedia("(max-width:600px)"),
 
 		//sticky note options
 		note = { //prototype
@@ -67,6 +68,10 @@ var todos = function() {
 		notesMaxPerColumnCount = 7,
 		notesMaxColumnCount = 3,
 		notesMoveTargetAccuracy = 10,
+		notesMaxPerColumnCountLarge = 7,
+		notesMaxColumnCountLarge = 3,
+		notesMaxPerColumnCountSmall = 10,
+		notesMaxColumnCountSmall = 2,
 
 		//jQuery elements
 		//landing page containers
@@ -458,6 +463,10 @@ var todos = function() {
 	};
 
 	registerStoryBoardPageEvents = function() {
+		$(window).resize(function() {
+			console.log("storyboard resized");
+			initializeStoryBoardPage();
+		});
 	};
 
 	registerFeaturesPageEvents = function() {
@@ -1098,6 +1107,8 @@ var todos = function() {
 		//notesCount new_pos_x
 		//0 => 5 + ((120 + 5) * 0) = 5
 		//7 => 5 + ((120 + 5) * 1) = 130
+		console.log("notesMaxColumnCount="+notesMaxColumnCount);
+		console.log("notesMaxPerColumnCount="+notesMaxPerColumnCount);			
 		new_pos_y = note.pos_y + ((note.height + note.pos_y) * (notesCnt % notesMaxPerColumnCount));					
 		console.log('new_pos_y='+new_pos_y);
 		new_pos_x = note.pos_x + ((note.width + note.pos_x) * (Math.floor(notesCnt/notesMaxPerColumnCount)));					
@@ -1116,6 +1127,19 @@ var todos = function() {
 			new_pos_y = null,
 			new_pos_x = null,
 			notesColumnCount = 1;
+		if (mqSmall.matches) {
+			console.log("mqSmall.matches=true");
+			notesMaxColumnCount = notesMaxColumnCountSmall;
+			notesMaxPerColumnCount = notesMaxPerColumnCountSmall;
+			console.log("notesMaxColumnCount="+notesMaxColumnCount);
+			console.log("notesMaxPerColumnCount="+notesMaxPerColumnCount);			
+		} else {
+			console.log("mqSmall.matches=false");
+			notesMaxColumnCount = notesMaxColumnCountLarge;
+			notesMaxPerColumnCount = notesMaxPerColumnCountLarge;
+			console.log("notesMaxColumnCount="+notesMaxColumnCount);
+			console.log("notesMaxPerColumnCount="+notesMaxPerColumnCount);			
+		};
 		stickyNoteOptions.notes.length = 0; //empty out notes array
 		$("body").empty();		
 		initElements();
@@ -1157,7 +1181,7 @@ var todos = function() {
 
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
 		makeFooterButtonActive($buttonStoryBoard);
-		//registerStoryBoardPageEvents();
+		registerStoryBoardPageEvents();
 	};
 
 	makeFooterButtonActive = function(button) {
