@@ -187,6 +187,7 @@ var todos = function() {
 		registerStoryBoardPageEvents,
 		enforceMaxTodos,
 		makeFooterButtonActive,
+		isFooterButtonActive,
 
 		//sticky note functions
 		makeNote, //constructor
@@ -465,7 +466,9 @@ var todos = function() {
 	registerStoryBoardPageEvents = function() {
 		$(window).resize(function() {
 			console.log("storyboard resized");
-			initializeStoryBoardPage();
+			if (isFooterButtonActive($buttonStoryBoard)) {
+				initializeStoryBoardPage();
+			};
 		});
 	};
 
@@ -1182,6 +1185,14 @@ var todos = function() {
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
 		makeFooterButtonActive($buttonStoryBoard);
 		registerStoryBoardPageEvents();
+	};
+
+	isFooterButtonActive = function(button) {
+		if (button.hasClass('buttonFooterActive')) {
+			return true;
+		} else {
+			return false;
+		};
 	};
 
 	makeFooterButtonActive = function(button) {
