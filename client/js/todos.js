@@ -45,6 +45,8 @@ var todos = function() {
 		maxTodos = 20,
 		mqSmall = window.matchMedia("(max-width:600px)"),
 		mqPrevious, 
+		historySupported = false,
+		state = "Home",
 
 		//sticky note options
 		note = { //prototype
@@ -189,6 +191,9 @@ var todos = function() {
 		enforceMaxTodos,
 		makeFooterButtonActive,
 		isFooterButtonActive,
+		isSupportedBrowserHistory,
+		init,
+		updateHistory,
 
 		//sticky note functions
 		makeNote, //constructor
@@ -202,6 +207,10 @@ var todos = function() {
 		noteMoved,					
 		noteMoving,
 		noteResized;					
+
+	isSupportedBrowserHistory = function() {
+		return !!(window.history && window.history.pushState);
+	};
 
 	initElements = function() {
 		console.log("initElements");
@@ -414,6 +423,29 @@ var todos = function() {
 			initializeLandingPage(true, true);
 		});
 
+		$(window).on('popstate', function(e) {
+			console.log('popstate event='+JSON.stringify(window.event.state)); //{"stateId":2}
+			switch (window.event.state.state) {
+				case "Home":
+					initializeLandingPage();
+					break;
+				case "Login":
+					initializeLoginPage();
+					break;
+				case "Storyboard":
+					initializeStoryBoardPage();
+					break;
+				case "Features":
+					initializeFeaturesPage();
+					break;
+				case "TechStack":
+					initializeTechStackPage();
+					break;
+				default:
+					console.log('State not recognized');
+					break;
+			};
+		});
 	};
 	
 	registerLoginPageEvents = function() {
@@ -575,13 +607,20 @@ var todos = function() {
 		};
 		console.log("cookie: " + $.cookie('email'));
 	};
-		
+	
+	init = function()	 {
+		historySupported = isSupportedBrowserHistory();
+		if (historySupported) {
+			console.log('history supported');
+		} else {
+			console.log('history NOT supported');
+		};
+	};
+
 	initializeLandingPage = function(left, right) {
 		console.log("initializeLandingPage");
+		init();
 		initElements();
-		if (left && right) {
-			makeFooterButtonActive($buttonHome);
-		};
 		$("body").empty();		
 		if (left) {
 			$labelWelcome.append(userEmail + "!<br>");
@@ -647,6 +686,23 @@ var todos = function() {
 
 		$(".todoInput input").focus();
 		registerLandingPageEvents();
+		
+		if (left && right) {
+			makeFooterButtonActive($buttonHome);
+			updateHistory();
+		};
+	};
+
+	updateHistory = function() {
+		if (historySupported) {
+			$('.buttonFooter').each(function(index, footerButton) {
+				if ($(this).hasClass('buttonFooterActive')) {
+					state = $(this).text().split(" ").join("");
+					window.history.pushState({'state':state}, null, state);					
+					console.log("updateHistory - state set to: " + state);
+				};
+			});
+		};
 	};
 
 	//if completed_todo_str is supplied, then removeTodo already marked the todo as completed in the db
@@ -900,6 +956,7 @@ var todos = function() {
 		$("body").prepend($divLeft);
 		registerLoginPageEvents();
 		$("#inputEmail").focus();
+		updateHistory();
 	};
 
 	login = function() {
@@ -1191,6 +1248,7 @@ var todos = function() {
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
 		makeFooterButtonActive($buttonStoryBoard);
 		registerStoryBoardPageEvents();
+		updateHistory();
 	};
 
 	isFooterButtonActive = function(button) {
@@ -1235,6 +1293,7 @@ var todos = function() {
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
 		makeFooterButtonActive($buttonStoryBoard);
 		//registerStoryBoardPageEvents();
+		updateHistory();
 	};
 
 	initializeFeaturesPage = function() {
@@ -1249,6 +1308,7 @@ var todos = function() {
 		$("body").prepend($divLeft);
 		makeFooterButtonActive($buttonFeatures);
 		//registerFeaturePageEvents();
+		updateHistory();
 	};
 
 	initializeTechStackPage = function() {
@@ -1263,6 +1323,7 @@ var todos = function() {
 		$("body").prepend($divLeft);
 		makeFooterButtonActive($buttonTechStack);
 		//registerFeaturePageEvents();
+		updateHistory();
 	};
 
 	enforceMaxTodos = function() {

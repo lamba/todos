@@ -394,3 +394,8 @@ server.post("/loginEncrypted", urlencodedParser, function (req, res) {
 		};
 	});
 });
+
+server.get("/:var(Home|Storyboard|Features|TechStack)", urlencodedParser, function (req, res) {
+	console.log("GET /Home");
+	res.redirect("/");
+});
