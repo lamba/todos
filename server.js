@@ -395,7 +395,8 @@ server.post("/loginEncrypted", urlencodedParser, function (req, res) {
 	});
 });
 
+//Redirect "soft" history pages to Home ("/") if user clicks refresh button
 server.get("/:var(Home|Storyboard|Features|TechStack)", urlencodedParser, function (req, res) {
-	console.log("GET /Home");
+	//console.log("GET /Home");
 	res.redirect("/");
 });

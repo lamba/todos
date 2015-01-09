@@ -292,6 +292,11 @@ var todos = function() {
 		$pFeaturesHeading = $("<p id='pFeaturesHeading'>Features</p>");
 		$pFeatures = $("<p id='pFeatures'>" 
 			+ "<ul>"
+			+		"<li>v0.1.6</li>"
+			+ 	"<ul>"
+			+			"<li>Made storyboard stickies draggable on iOS</li>"
+			+			"<li>Basic responsive design and use of history API</li>"
+			+ 	"</ul>"
 			+		"<li>v0.1.5</li>"
 			+ 	"<ul>"
 			+			"<li>Display storyboard version of todos</li>"
@@ -331,9 +336,10 @@ var todos = function() {
 			+ "<ul>"
 			+		"<li>HTML (51 lines)</li>"
 			+		"<li>CSS (43 lines)</li>"
-			+		"<li>JavaScript (1,300 lines)</li>"
+			+		"<li>JavaScript (1,400 lines)</li>"
 			+		"<li>jQuery/AJAX/JSON</li>"
 			+		"<li>jQueryUI</li>"
+			+		"<li>Touch Punch</li>"
 			+		"<li>Sticky Notes Module (300 lines)</li>"
 			+		"<li>Node.js (400 lines)</li>"
 			+		"<li>BCrypt</li>"
@@ -341,7 +347,7 @@ var todos = function() {
 			+		"<li>MongoDB</li>"
 			+		"<li>Heroku PaaS/SSL</li>"
 			+		"<li>===</li>"
-			+		"<li>Total (2,100 lines)</li>"
+			+		"<li>Total (2,200 lines)</li>"
 			+ "</ul>"
 			+ "</p>");
 
@@ -380,7 +386,7 @@ var todos = function() {
 		});
 		
 		$("button.goToLoginPage").on("click", function(event) {
-			initializeLoginPage();
+			initializeLoginPage(true);
 		});  	
 
 		$("button#buttonLogout").on("click", function(event) {
@@ -401,18 +407,18 @@ var todos = function() {
 
 		$('button#buttonStoryBoard').on("click", function(event) {
 			if (boolLoggedIn) {
-				initializeStoryBoardPage();			
+				initializeStoryBoardPage(true);			
 			} else {
-				initializeTestStoryBoardPage();			
+				initializeTestStoryBoardPage(true);			
 			};
 		});
 
 		$('button#buttonFeatures').on("click", function(event) {
-			initializeFeaturesPage();			
+			initializeFeaturesPage(true);			
 		});
 
 		$('button#buttonTechStack').on("click", function(event) {
-			initializeTechStackPage();			
+			initializeTechStackPage(true);			
 		});
 
 		$("#buttonHome").on('click', function(event) {
@@ -420,26 +426,31 @@ var todos = function() {
 		});
 
 		$("#buttonContact").on('click', function(event) {
-			initializeLandingPage(true, true);
+			initializeLandingPage(true, true, true);
 		});
 
 		$(window).on('popstate', function(e) {
 			console.log('popstate event='+JSON.stringify(window.event.state)); //{"stateId":2}
+			console.log('history='+JSON.stringify(window.history));
 			switch (window.event.state.state) {
 				case "Home":
-					initializeLandingPage();
+					initializeLandingPage(true, true, false);
 					break;
 				case "Login":
-					initializeLoginPage();
+					initializeLoginPage(false);
 					break;
 				case "Storyboard":
-					initializeStoryBoardPage();
+					if (boolLoggedIn) {
+						initializeStoryBoardPage(false);			
+					} else {
+						initializeTestStoryBoardPage(false);			
+					};
 					break;
 				case "Features":
-					initializeFeaturesPage();
+					initializeFeaturesPage(false);
 					break;
 				case "TechStack":
-					initializeTechStackPage();
+					initializeTechStackPage(false);
 					break;
 				default:
 					console.log('State not recognized');
@@ -617,7 +628,7 @@ var todos = function() {
 		};
 	};
 
-	initializeLandingPage = function(left, right) {
+	initializeLandingPage = function(left, right, history) {
 		console.log("initializeLandingPage");
 		init();
 		initElements();
@@ -686,19 +697,25 @@ var todos = function() {
 
 		$(".todoInput input").focus();
 		registerLandingPageEvents();
-		
+
 		if (left && right) {
 			makeFooterButtonActive($buttonHome);
-			updateHistory();
+			updateHistory(history);
 		};
 	};
 
-	updateHistory = function() {
+	updateHistory = function(history) {
+		console.log('history='+history)
 		if (historySupported) {
 			$('.buttonFooter').each(function(index, footerButton) {
 				if ($(this).hasClass('buttonFooterActive')) {
 					state = $(this).text().split(" ").join("");
-					window.history.pushState({'state':state}, null, state);					
+					//window.history.pushState((history ? {'state':state} : null), null, state);					
+					if (history) {
+						window.history.pushState({'state':state}, null, state);					
+					} else {
+						window.history.replaceState({'state':state}, null, state);					
+					};
 					console.log("updateHistory - state set to: " + state);
 				};
 			});
@@ -918,7 +935,7 @@ var todos = function() {
 		return $.when.apply(undefined, promises).promise(); //return promise, awaiting resolve
 	};
 	
-	initializeLoginPage = function() {
+	initializeLoginPage = function(history) {
 		console.log("initializeLoginPage");
 		$("body").empty();		
 
@@ -956,7 +973,7 @@ var todos = function() {
 		$("body").prepend($divLeft);
 		registerLoginPageEvents();
 		$("#inputEmail").focus();
-		updateHistory();
+		updateHistory(history);
 	};
 
 	login = function() {
@@ -1185,7 +1202,7 @@ var todos = function() {
 		));
 	};
 
-	initializeStoryBoardPage = function() {
+	initializeStoryBoardPage = function(history) {
 		console.log("initializeStoryBoardPage");
 		var 
 			new_pos_y = null,
@@ -1248,7 +1265,7 @@ var todos = function() {
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
 		makeFooterButtonActive($buttonStoryBoard);
 		registerStoryBoardPageEvents();
-		updateHistory();
+		updateHistory(history);
 	};
 
 	isFooterButtonActive = function(button) {
@@ -1270,7 +1287,7 @@ var todos = function() {
 		button.addClass('buttonFooterActive');
 	};
 
-	initializeTestStoryBoardPage = function() {
+	initializeTestStoryBoardPage = function(history) {
 		console.log("initializeTestStoryBoardPage");
 		var new_pos_y = null;
 		stickyNoteOptions.notes.length = 0; //empty out notes array
@@ -1293,10 +1310,10 @@ var todos = function() {
 		$("#divStickyNote").stickyNotes(stickyNoteOptions);
 		makeFooterButtonActive($buttonStoryBoard);
 		//registerStoryBoardPageEvents();
-		updateHistory();
+		updateHistory(history);
 	};
 
-	initializeFeaturesPage = function() {
+	initializeFeaturesPage = function(history) {
 		console.log("initializeFeaturesPage");
 		$("body").empty();		
 		initElements();
@@ -1308,10 +1325,10 @@ var todos = function() {
 		$("body").prepend($divLeft);
 		makeFooterButtonActive($buttonFeatures);
 		//registerFeaturePageEvents();
-		updateHistory();
+		updateHistory(history);
 	};
 
-	initializeTechStackPage = function() {
+	initializeTechStackPage = function(history) {
 		console.log("initializeTechStackPage");
 		$("body").empty();		
 		initElements();
@@ -1323,7 +1340,7 @@ var todos = function() {
 		$("body").prepend($divLeft);
 		makeFooterButtonActive($buttonTechStack);
 		//registerFeaturePageEvents();
-		updateHistory();
+		updateHistory(history);
 	};
 
 	enforceMaxTodos = function() {
