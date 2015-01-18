@@ -45,7 +45,9 @@ var todos = function() {
 		maxTodos = 20,
 		mqSmall = window.matchMedia("(max-width:600px)"),
 		mqPrevious, 
-		historySupported = false,
+		isHistorySupported = false,
+		isMaintainUrlHistory = false,
+		isUpdateAnonymousTodos = false,
 		state = "Home",
 
 		//sticky note options
@@ -194,6 +196,7 @@ var todos = function() {
 		isSupportedBrowserHistory,
 		init,
 		updateHistory,
+		getAllTodosJSON, //for angular app
 
 		//sticky note functions
 		makeNote, //constructor
@@ -341,6 +344,7 @@ var todos = function() {
 			+		"<li>jQueryUI</li>"
 			+		"<li>Touch Punch</li>"
 			+		"<li>Sticky Notes Module (300 lines)</li>"
+			+		"<li>Toastr</li>"
 			+		"<li>Node.js (400 lines)</li>"
 			+		"<li>BCrypt</li>"
 			+		"<li>Mongoose</li>"
@@ -390,7 +394,9 @@ var todos = function() {
 		});  	
 
 		$("button#buttonLogout").on("click", function(event) {
+			console.log('logout');
 			boolLoggedIn = false;
+			userEmail = "Anonymous";
 			initializeLandingPage(true,true);
 		});  	
 
@@ -562,27 +568,44 @@ var todos = function() {
 		return dfd.promise(); //return the promise, awaiting resolve
 	};
 	
+	getAllTodosJSON = function() {
+		console.log("getAllTodosJSON");
+		//was calling todos.json
+		$.get("alltodos.json", {}, function (response) {
+		})
+			.done(function(response){
+				console.log("getAllTodosJSON done");
+				console.log("getAllTodosJSON response: " + JSON.stringify(response));
+				return response;
+			});
+	};
+	
 	getTodos = function() {
 		//note: when a todo is marked completed, it is simply added to the bottom of the display
 		//			but a new fetch from db returns in created order, not completed order
-		var dfd = new $.Deferred();
 		console.log("getTodosSorted");
-		//was calling todos.json
-		console.log("userEmail:" + userEmail);
-		$.post("getTodosSorted", {'email':userEmail}, function (response) {
-		})
-			.done(function(response){
-				console.log("getTodosSorted done");
-				console.log("getTodosSorted response: " + JSON.stringify(response));
-				savedTodos = response;
-				dfd.resolve();
+		if (userEmail !== 'Anonymous') {
+			var dfd = new $.Deferred();
+			//was calling todos.json
+			console.log("userEmail:" + userEmail);
+			$.post("getTodosSorted", {'email':userEmail}, function (response) {
+			})
+				.done(function(response){
+					console.log("getTodosSorted done");
+					console.log("getTodosSorted response: " + JSON.stringify(response));
+					savedTodos = response;
+					dfd.resolve();
+				});
+			/*
+			$.post('getTodos', {'email':userEmail}, function (response) {
+				console.log("getTodos response: " + JSON.stringify(response));
 			});
-		/*
-		$.post('getTodos', {'email':userEmail}, function (response) {
-			console.log("getTodos response: " + JSON.stringify(response));
-		});
-		*/		
-		return dfd.promise(); //return the promise, awaiting resolve
+			*/		
+			return dfd.promise(); //return the promise, awaiting resolve
+		} else {
+			savedTodos = [];
+			return $.Deferred().resolve().promise();
+		};
 	};
 	
 	displayTodos = function() {
@@ -620,8 +643,8 @@ var todos = function() {
 	};
 	
 	init = function()	 {
-		historySupported = isSupportedBrowserHistory();
-		if (historySupported) {
+		isHistorySupported = isSupportedBrowserHistory();
+		if (isHistorySupported) {
 			console.log('history supported');
 		} else {
 			console.log('history NOT supported');
@@ -701,12 +724,13 @@ var todos = function() {
 		if (left && right) {
 			makeFooterButtonActive($buttonHome);
 			updateHistory(history);
+			toastr.success("Welcome!");
 		};
 	};
 
 	updateHistory = function(history) {
 		console.log('history='+history)
-		if (historySupported) {
+		if (isHistorySupported && isMaintainUrlHistory) {
 			$('.buttonFooter').each(function(index, footerButton) {
 				if ($(this).hasClass('buttonFooterActive')) {
 					state = $(this).text().split(" ").join("");
@@ -904,35 +928,39 @@ var todos = function() {
 	};
 	
 	updateAnonymousTodos = function() {
-		var promises = [];
 		console.log("updateAnonymousTodos");
-		todosList.forEach(function(todo_div) {
-			var dfd = new $.Deferred();
-			$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
-			})		
-				.done(function(response){
-					console.log("updateAnonymousTodos done");					
-					console.log("updateAnonymousTodo response: " + JSON.stringify(response));
-					dfd.resolve();
-				});		
-			promises.push(dfd);
-		});
-		completedTodosList.forEach(function(todo_div) {
-			var dfd = new $.Deferred();
-			$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
-			})
-				.done(function(response){
-					console.log("updateAnonymousTodos done");					
-					console.log("updateAnonymousTodo response: " + JSON.stringify(response));
-					dfd.resolve();
-				});		
-			promises.push(dfd);
-		});
-		//how to return multiple promises
-		//perhaps the most awesome/complex javascript i've ever used in a real program
-		//apply let's us call a function with our choice of caller and arguments
-		//apply takes two parameters: (1) the value that should be bound to 'this' (caller) (2) an array of parameters
-		return $.when.apply(undefined, promises).promise(); //return promise, awaiting resolve
+		if (isUpdateAnonymousTodos) {
+			var promises = [];
+			todosList.forEach(function(todo_div) {
+				var dfd = new $.Deferred();
+				$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
+				})		
+					.done(function(response){
+						console.log("updateAnonymousTodos done");					
+						console.log("updateAnonymousTodo response: " + JSON.stringify(response));
+						dfd.resolve();
+					});		
+				promises.push(dfd);
+			});
+			completedTodosList.forEach(function(todo_div) {
+				var dfd = new $.Deferred();
+				$.post("updateAnonymousTodo", {"_id":todo_div.data('mongoid'), "email":userEmail}, function (response) {
+				})
+					.done(function(response){
+						console.log("updateAnonymousTodos done");					
+						console.log("updateAnonymousTodo response: " + JSON.stringify(response));
+						dfd.resolve();
+					});		
+				promises.push(dfd);
+			});
+			//how to return multiple promises
+			//perhaps the most awesome/complex javascript i've ever used in a real program
+			//apply let's us call a function with our choice of caller and arguments
+			//apply takes two parameters: (1) the value that should be bound to 'this' (caller) (2) an array of parameters
+			return $.when.apply(undefined, promises).promise(); //return promise, awaiting resolve
+		} else {
+			return $.Deferred().resolve().promise();
+		};
 	};
 	
 	initializeLoginPage = function(history) {
@@ -1352,6 +1380,7 @@ var todos = function() {
 			$('#labelNumTodos').css({
 				'color':'#f00'
 			});
+			toastr.warning("Sorry, only 20 todos allowed!");
 		} else {
 			$('#inputTodo').attr('disabled', false);
 			$("#inputTodo").focus();
@@ -1437,7 +1466,9 @@ var todos = function() {
 	
 	return {
 		noteMoved: noteMoved,
-		noteMoving: noteMoving
+		noteMoving: noteMoving,
+		initializeLandingPage: initializeLandingPage,
+		getAllTodosJSON: getAllTodosJSON
 	};
 
 //adding these round brackets at the end, below, turns the function declaration into a function expression 

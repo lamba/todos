@@ -22,6 +22,7 @@ var
 	mailOptions,
 	todosVersion = "v0.1.6",
 	sid,
+	cors,
 
 	//functions
 	sendEmail;
@@ -37,6 +38,7 @@ cookieParser = require("cookie-parser");
 session = require("express-session");
 bcrypt = require("bcrypt-nodejs");
 nodemailer = require("nodemailer");
+cors = require("cors");
 
 transporter = nodemailer.createTransport('direct', {
 	debug:true
@@ -53,6 +55,66 @@ server.use(session({
 	saveUninitialized:true,
 	resave:true
 }));
+server.use(cors());
+server.options('/api/todo/:id', cors()); // enable pre-flight request for DELETE request
+
+//cors setup
+// server.use(function(req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+// 	res.header("Access-Control-Allow-Credentials: true");
+// 	//res.header("Access-Control-Allow-Origin: http://url.com:8080");
+// 	res.header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+// 	res.header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");  
+// 	next();
+// });
+
+//to enable cors for other than http get, on all requests add these headers
+// app.all('*', function(req, res,next) {
+//     var 
+//     	responseSettings = {
+//         "AccessControlAllowOrigin": 
+//         	req.headers.origin,
+//         "AccessControlAllowHeaders": 
+//         	"Content-Type,
+//         	X-CSRF-Token, 
+//         	X-Requested-With, 
+//         	Accept, 
+//         	Accept-Version, 
+//         	Content-Length, 
+//         	Content-MD5,  
+//         	Date, 
+//         	X-Api-Version, 
+//         	X-File-Name",
+//         "AccessControlAllowMethods": 
+//         	"POST, GET, PUT, DELETE, OPTIONS",
+//         "AccessControlAllowCredentials": 
+//         	true
+//     };
+//     //headers
+//     res.header(
+//     	"Access-Control-Allow-Credentials", 
+//     	responseSettings.AccessControlAllowCredentials
+//     );
+//     res.header(
+//     	"Access-Control-Allow-Origin",  
+//     	responseSettings.AccessControlAllowOrigin
+//     );
+//     res.header(
+//     	"Access-Control-Allow-Headers", 
+//     	(req.headers['access-control-request-headers']) ? req.headers['access-control-request-headers'] : "x-requested-with"
+//     );
+//     res.header(
+//     	"Access-Control-Allow-Methods", 
+//     	(req.headers['access-control-request-method']) ? req.headers['access-control-request-method'] : responseSettings.AccessControlAllowMethods
+//     );
+//     if ('OPTIONS' == req.method) {
+//         res.send(200);
+//     }
+//     else {
+//         next();
+//     };
+// });
 
 mongoose.connect(process.env.MONGOLAB_URI || mongoURI, function(err) {
 	if (err) {
@@ -212,16 +274,130 @@ server.get("/sorted_todos.json", urlencodedParser, function (req, res) {
 });
 
 server.post("/getTodosSorted", urlencodedParser, function (req, res) {
+	console.log("/getTodosSorted");
 	ToDo.find({'email':req.body.email.toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
 		res.json(todosList);
 	});
 });
+
+//for cross origin calls from decoupled client, e.g. angular/bootstrap
+//did not work from angular
+server.post("/getTodosSortedJsonp", urlencodedParser, function (req, res) {
+	console.log("/getTodosSortedJsonp");
+	ToDo.find({'email':req.body.email.toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
+		res.jsonp(todosList);
+	});
+});
+
+//for cross origin calls from decoupled client, e.g. angular/bootstrap
+server.get("/getTodosSorted.jsonp", urlencodedParser, function (req, res) {
+	console.log("/getTodosSorted.jsonp");
+	console.log(req.param('callback'));
+	//ToDo.find({'email':req.param('email').toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
+	ToDo.find({'email':'puneet@email.com','deleted_date':''}).sort('created_date').find(function (err, todosList) {
+		res.jsonp(todosList);
+	});
+});
+
+//for cors calls from decoupled client, e.g. angular/bootstrap
+server.get("/getTodosSorted.cors", urlencodedParser, function (req, res) {
+	console.log("/getTodosSorted.cors");
+	console.log(req.header('Origin'));
+	//ToDo.find({'email':req.param('email').toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
+	ToDo.find({'email':req.param('email').toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
+		res.json(todosList);
+	});
+});
+
+//======================
+//all urls starting with /api are for angular resource calls from decoupled client, e.g. angular/bootstrap
+server.get("/api/todo", urlencodedParser, function (req, res) {
+	console.log("get /api/todo");
+	console.log(req.header('Origin'));
+	//ToDo.find({'email':req.param('email').toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
+	ToDo.find({'email':req.param('email').toLowerCase(),'deleted_date':''}).sort('created_date').find(function (err, todosList) {
+		res.send(todosList);
+	});
+});
+
+server.get("/api/user", urlencodedParser, function (req, res) {
+	console.log("get /api/user");
+	User.find({}).sort().find(function (err, usersList) {
+		res.send(usersList);
+	});
+});
+
+server.post("/api/todo", urlencodedParser, function (req, res) {
+	console.log("post /api/todo");
+	console.log("Origin:"+req.header('Origin'));
+	console.log("Origin:"+req.header.origin);
+	console.log("_id:"+req.param('_id'));
+	console.log("description:"+req.param('description'));
+	console.log("delete:"+req.body.delete);
+	//console.log("_id:"+req.params.'_id'));
+	console.log("_id:"+req.body._id);
+	console.log("description:"+req.body.description);
+	ToDo.findOne({'_id':req.param('_id')}, function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			res.send(result);
+			return false;
+		} else {
+			console.log('findOne result='+result);		
+			if (result !== null) {
+				result.description = req.param('description');
+				result.save();
+				res.send(result);			
+			} else {
+				res.send("no result");
+			};
+		};
+	});
+});
+
+server.delete("/api/todo/:id", urlencodedParser, function (req, res) {
+	console.log("delete /api/todo id: " + req.param('_id'));
+	ToDo.findOne({'_id':req.param('_id')}, function (err, result) {
+		if (err !== null) {
+			console.log("findOne error:" + err);
+			res.send(err);
+			return false;
+		} else if (result === null) {
+			console.log('no result');
+			res.send(result);
+			return false;
+		} else {
+			console.log("findOne result:" + result);		
+			result.deleted_date = new Date();
+			result.save(function(error, response){
+				if (error !== null) {
+					console.log("save error:" + error);
+					res.send(response);
+					return true;
+				} else {
+					console.log("save response:" + response);		
+					res.send(response);
+					//return true;
+				};
+			});
+		};
+	});
+});
+//======================
 
 //use http://localhost/alltodos.json
 server.get("/alltodos.json", urlencodedParser, function (req, res) {
 	ToDo.find({}, function (err, todosList) {
 		console.log("sid:" + req.sessionID);
 		res.json(todosList);
+	});
+});
+
+//for cross origin calls from decouple client, e.g. angular/bootstrap
+server.get("/alltodos.jsonp", urlencodedParser, function (req, res) {
+	ToDo.find({}, function (err, todosList) {
+		console.log("/alltodos.jsonp sid:" + req.sessionID);
+		res.jsonp(todosList);
 	});
 });
 
