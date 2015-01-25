@@ -1033,7 +1033,7 @@ var todos = function() {
 			})
 				.error(function(){
 					boolLoggedIn = false;
-					console.log("lfplaplogin request failed");
+					console.log("login request failed");
 					$labelLoginErrorMessage.text(response);
 				})
 				.done(function(){

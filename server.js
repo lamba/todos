@@ -311,6 +311,31 @@ server.get("/getTodosSorted.cors", urlencodedParser, function (req, res) {
 
 //======================
 //all urls starting with /api are for angular resource calls from decoupled client, e.g. angular/bootstrap
+
+//todo apis
+//create
+server.post("/api/todo", urlencodedParser, function (req, res) {
+	console.log("post /api/todo");
+	console.log("description:"+req.param('description'));
+	var newTodo = new ToDo({
+		"description":req.param('description'),
+		"email":req.param('email'),
+		"created_date":new Date()
+	});
+	newTodo.save( function (err, result) {
+		if (err !== null) {
+			console.log(err);
+			console.log(result);
+			res.send(result);			
+			return false;
+		} else {
+			console.log(result);
+			res.send(result);			
+		};
+	});
+});
+
+//query
 server.get("/api/todo", urlencodedParser, function (req, res) {
 	console.log("get /api/todo");
 	console.log(req.header('Origin'));
@@ -320,42 +345,37 @@ server.get("/api/todo", urlencodedParser, function (req, res) {
 	});
 });
 
-server.get("/api/user", urlencodedParser, function (req, res) {
-	console.log("get /api/user");
-	User.find({}).sort().find(function (err, usersList) {
-		res.send(usersList);
-	});
-});
-
-server.post("/api/todo", urlencodedParser, function (req, res) {
-	console.log("post /api/todo");
-	console.log("Origin:"+req.header('Origin'));
-	console.log("Origin:"+req.header.origin);
+//update, mark completed/incomplete
+server.put("/api/todo", urlencodedParser, function (req, res) {
+	var response = {};
+	console.log("put /api/todo");
 	console.log("_id:"+req.param('_id'));
 	console.log("description:"+req.param('description'));
-	console.log("delete:"+req.body.delete);
-	//console.log("_id:"+req.params.'_id'));
-	console.log("_id:"+req.body._id);
-	console.log("description:"+req.body.description);
+	console.log("completed_date:"+req.param('completed_date'));
 	ToDo.findOne({'_id':req.param('_id')}, function (err, result) {
 		if (err !== null) {
+			response.error = err;
 			console.log(err);
 			res.send(result);
 			return false;
 		} else {
 			console.log('findOne result='+result);		
 			if (result !== null) {
+				result.completed_date = typeof req.param('completed_date') === 'undefined' ? undefined : req.param('completed_date');
 				result.description = req.param('description');
 				result.save();
+				console.log("final result:"+result);
 				res.send(result);			
 			} else {
-				res.send("no result");
+				response.error = "Todo not found";
+				res.send(response);
 			};
 		};
 	});
 });
 
-server.delete("/api/todo/:id", urlencodedParser, function (req, res) {
+//remove
+server.delete("/api/todo", urlencodedParser, function (req, res) {
 	console.log("delete /api/todo id: " + req.param('_id'));
 	ToDo.findOne({'_id':req.param('_id')}, function (err, result) {
 		if (err !== null) {
@@ -383,7 +403,108 @@ server.delete("/api/todo/:id", urlencodedParser, function (req, res) {
 		};
 	});
 });
-//======================
+
+//==================== user apis
+//query
+server.get("/api/user", urlencodedParser, function (req, res) {
+	console.log("get /api/user");
+	User.find({}).sort().find(function (err, usersList) {
+		res.send(usersList);
+	});
+});
+
+//login, update
+server.put("/api/user", urlencodedParser, function (req, res) {
+	var response = {};
+	console.log("put /api/user email: " + req.param('email'));
+	//angular $resource expects an object; if you send raw string instead, it will convert to array of char, i.e. garbage
+	//console.log("cookies: " + req.Cookies);
+	if (!sendEmail(req.param('email').toLowerCase())) {
+	//if (!sendEmail(req.body.email.toLowerCase())) {
+		response.error = 'Invalid email';
+		console.log(response.error);
+		res.send(response);
+		return false;
+	};
+	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
+	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
+		if (!user) { //error
+			console.log('findOne error:'+err);
+			response.error = 'Email not registered';
+			console.log(response.error);
+			res.send(response);
+			return false;
+		} else { //success
+			console.log("fineOne success: email=" + user.email + ", password=" + user.password);
+			//don't encrypt users with email.com test addresses
+			if (req.param('email').indexOf("email.com") > 0) {
+				if (req.param('password') !== user.password) { //error
+					response.error = "Invalid password";
+					console.log(response.error);
+					res.send(response);		
+					return false;
+				}
+			} else if (!bcrypt.compareSync(req.param('password'), user.password)) { //error
+					response.error = "Invalid password";
+					console.log(response.error);
+					res.send(response);		
+					return false;
+			};
+			user.update({last_login_date:new Date()}, function(update_err, result) {
+				if (update_err !== null) { //error
+					response.error = update_err;
+					console.log(response.error);
+					res.send(response);
+					return false;
+				} else { //success
+					response.success = "Updated last login for user: " + user.email + ", Result: " + result
+					console.log(response.success);
+					res.send(response);
+				};			
+			});						
+		};
+	});
+});
+
+//register, create
+server.post("/api/user", urlencodedParser, function (req, res) {
+	console.log("post /api/user request:" + JSON.stringify(req.body));
+	console.log("cookies: " + req.Cookies);
+	if (!sendEmail(req.param('email').toLowerCase())) {
+	//if (!sendEmail(req.body.email.toLowerCase())) {
+		console.log('Invalid email');
+		res.send("Error: Invalid email");
+		return false;
+	};
+	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
+	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
+		console.log("mongo user="+JSON.stringify(user));
+		if (!user) {
+			console.log("Email not found, proceeding with registration");
+		} else {
+			console.log(err);
+			res.send("Email already registered");
+			return false;
+		};
+	});
+	console.log('2');
+	var newUser = new User({
+		"email":req.param('email').toLowerCase(),
+		"password":req.param('email').indexOf('email.com') > 0 ? req.param('password') : bcrypt.hashSync(req.param('password')),
+		"roles":""
+	});
+	newUser.save(function(err, result) {
+		if (err !== null) {
+			console.log("error="+err);
+			res.send("Error:"+err);
+			return false;
+		} else {
+			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
+			res.send("Success");			
+		};
+	});
+});
+//====================== end of angular apis
 
 //use http://localhost/alltodos.json
 server.get("/alltodos.json", urlencodedParser, function (req, res) {
