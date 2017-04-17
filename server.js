@@ -1,5 +1,5 @@
 var 
-  express,
+	express,
 	bodyParser,
 	jsonParser,
 	urlencodedParser,
@@ -14,13 +14,13 @@ var
 	loginErrorMessage,
 	cookieParser,
 	session,
-  port,
+	port,
 	server,
 	mongoURI,
 	nodemailer,
 	transporter,
 	mailOptions,
-	todosVersion = "v0.1.6",
+	todosVersion = "v0.1.7",
 	sid,
 	cors,
 
@@ -44,7 +44,7 @@ transporter = nodemailer.createTransport('direct', {
 	debug:true
 });
 
-port = 80;
+port = 8080;
 mongoURI = 'mongodb://localhost/test';
 server = express();
 
