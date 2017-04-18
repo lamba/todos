@@ -658,7 +658,8 @@ server.post("/login", urlencodedParser, function (req, res) {
 });
 
 server.post("/loginEncrypted", urlencodedParser, function (req, res) {
-	console.log("/loginEncrypted request: " + req.body);
+	console.log("/loginEncrypted request:");
+	console.log(req.body);
 	console.log("cookies: " + req.Cookies);
 	if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Invalid email');
