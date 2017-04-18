@@ -621,7 +621,8 @@ server.get("/cookies", urlencodedParser, function (req, res) {
 });
 
 server.post("/login", urlencodedParser, function (req, res) {
-	console.log("/login request: " + req.body);
+	console.log("/login request: ");
+	console.log(req.body);
 	console.log("cookies: " + req.Cookies);
 	if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Invalid email');
