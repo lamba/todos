@@ -211,7 +211,9 @@ server.post("/removeTodo", urlencodedParser, function (req, res) {
 			return false;
 		} else {
 			console.log("removeTodo findOne result:" + result);		
-			result.completed_date = req.body.completed_date;
+			if (req.body.completed_date !== null) {
+				result.completed_date = req.body.completed_date;
+			}
 			result.save();
 			res.send(result);			
 		};
@@ -523,7 +525,8 @@ server.get("/alltodos.jsonp", urlencodedParser, function (req, res) {
 });
 
 server.post("/addTodo", urlencodedParser, function (req, res) {
-	console.log("/addTodo request: " + req.body);
+	console.log("/addTodo request: ");
+	console.log(req.body);
 	var newTodo = new ToDo({
 		"description":req.body.description,
 		"email":req.body.email,
