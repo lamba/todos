@@ -1,3 +1,4 @@
+//server for lamba-todos
 var 
 	express,
 	bodyParser,
@@ -20,7 +21,7 @@ var
 	nodemailer,
 	transporter,
 	mailOptions,
-	todosVersion = "v0.1.7",
+	todosVersion = "v0.1.8",
 	sid,
 	cors,
 
@@ -412,6 +413,35 @@ server.get("/api/user", urlencodedParser, function (req, res) {
 	console.log("get /api/user");
 	User.find({}).sort().find(function (err, usersList) {
 		res.send(usersList);
+	});
+});
+
+//remove -- for protractor testing, create and remove user to make repeatable
+server.delete("/api/user", urlencodedParser, function (req, res) {
+	console.log("delete /api/user email: " + req.param('email'));
+	User.findOne({'email':req.param('email')}, function (err, result) {
+		if (err !== null) {
+			console.log("findOne error:" + err);
+			res.send(err);
+			return false;
+		} else if (result === null) {
+			console.log('user with this email not found');
+			res.send(result);
+			return false;
+		} else {
+			console.log("findOne result:" + result);		
+			result.remove(function(error, response){
+				if (error !== null) {
+					console.log("remove error:" + error);
+					res.send(response);
+					return true;
+				} else {
+					console.log("remove response:" + response);		
+					res.send(response);
+					//return true;
+				};
+			});
+		};
 	});
 });
 
