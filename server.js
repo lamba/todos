@@ -21,7 +21,7 @@ var
 	nodemailer,
 	transporter,
 	mailOptions,
-	todosVersion = "v0.1.8",
+	todosVersion = "v0.1.9",
 	sid,
 	cors,
 
@@ -499,7 +499,49 @@ server.put("/api/user", urlencodedParser, function (req, res) {
 });
 
 //register, create
+// server.post("/api/user", urlencodedParser, function (req, res) {
+// 	console.log("post /api/user request:" + JSON.stringify(req.body));
+// 	console.log("cookies: " + req.Cookies);
+// 	if (!sendEmail(req.param('email').toLowerCase())) {
+// 	//if (!sendEmail(req.body.email.toLowerCase())) {
+// 		console.log('Invalid email');
+// 		res.send("Error: Invalid email");
+// 		return false;
+// 	};
+// 	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
+// 	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
+// 		console.log("mongo user="+JSON.stringify(user));
+// 		if (!user) {
+// 			console.log("Email not found, proceeding with registration");
+// 		} else {
+// 			console.log(err);
+// 			res.send("Email already registered");
+// 			return false;
+// 		};
+// 	});
+// 	console.log('2');
+// 	var newUser = new User({
+// 		"email":req.param('email').toLowerCase(),
+// 		"password":req.param('email').indexOf('email.com') > 0 ? req.param('password') : bcrypt.hashSync(req.param('password')),
+// 		"roles":""
+// 	});
+// 	newUser.save(function(err, result) {
+// 		if (err !== null) {
+// 			console.log("error="+err);
+// 			res.send("Error:"+err);
+// 			return false;
+// 		} else {
+// 			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
+// 			res.send("Success");			
+// 		};
+// 	});
+// });
+
+//REVISED
+//comment out the verion above
+//register, create
 server.post("/api/user", urlencodedParser, function (req, res) {
+	var response = {}
 	console.log("post /api/user request:" + JSON.stringify(req.body));
 	console.log("cookies: " + req.Cookies);
 	if (!sendEmail(req.param('email').toLowerCase())) {
@@ -511,28 +553,29 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
 	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		console.log("mongo user="+JSON.stringify(user));
-		if (!user) {
+		if (!user) { //email not found
 			console.log("Email not found, proceeding with registration");
-		} else {
-			console.log(err);
-			res.send("Email already registered");
+			var newUser = new User({
+				"email":req.param('email').toLowerCase(),
+				"password":req.param('email').indexOf('email.com') > 0 ? req.param('password') : bcrypt.hashSync(req.param('password')),
+				"roles":""
+			});
+			newUser.save(function(err, result) {
+				if (err !== null) {
+					console.log("error="+err);
+					res.send("Error:"+err);
+					return false;
+				} else {
+					//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
+					res.send("Success");			
+				};
+			});
+		} else { //email found
+			console.log("Error: Email already registered. " + err);
+			response.error = "Error: Email already registered";
+			//res.send("Error: Email already registered");
+			res.send(response);
 			return false;
-		};
-	});
-	console.log('2');
-	var newUser = new User({
-		"email":req.param('email').toLowerCase(),
-		"password":req.param('email').indexOf('email.com') > 0 ? req.param('password') : bcrypt.hashSync(req.param('password')),
-		"roles":""
-	});
-	newUser.save(function(err, result) {
-		if (err !== null) {
-			console.log("error="+err);
-			res.send("Error:"+err);
-			return false;
-		} else {
-			//res.cookie('email',req.body.email, {maxAge:3600000*24*14, httpOnly:false});
-			res.send("Success");			
 		};
 	});
 });
