@@ -40,7 +40,7 @@ var todos = function() {
 		boolRememberMe = false,
 		boolLoggedIn = false,
 		savedTodos,
-		todosVersion = "v0.1.9",
+		todosVersion = "v0.1.10",
 		numTodos = 0,
 		maxTodos = 20,
 		mqSmall = window.matchMedia("(max-width:600px)"),

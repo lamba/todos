@@ -21,7 +21,7 @@ var
 	nodemailer,
 	transporter,
 	mailOptions,
-	todosVersion = "v0.1.9",
+	todosVersion = "v0.1.10",
 	sid,
 	cors,
 
@@ -318,8 +318,15 @@ server.get("/getTodosSorted.cors", urlencodedParser, function (req, res) {
 //todo apis
 //create
 server.post("/api/todo", urlencodedParser, function (req, res) {
+	var response = {};
 	console.log("post /api/todo");
 	console.log("description:"+req.param('description'));
+	if (!req.param('description')) { //undefined
+		response.error = 'Error - todo is not valid: ' + req.param('description');
+		console.log(response.error);
+		res.status(400).send(response); //how to return an error 4xx=client error, 5xx=server error
+		return false;
+	};
 	var newTodo = new ToDo({
 		"description":req.param('description'),
 		"email":req.param('email'),
@@ -541,7 +548,9 @@ server.put("/api/user", urlencodedParser, function (req, res) {
 //comment out the verion above
 //register, create
 server.post("/api/user", urlencodedParser, function (req, res) {
-	var response = {}
+	var 
+		response = {},
+		regex = /^[a-z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)?@[a-z][a-zA-Z-0-9]*\.[a-z]+(\.[a-z]+)?$/;
 	console.log("post /api/user request:" + JSON.stringify(req.body));
 	console.log("cookies: " + req.Cookies);
 	if (!sendEmail(req.param('email').toLowerCase())) {
@@ -550,6 +559,12 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 		res.send("Error: Invalid email");
 		return false;
 	};
+	if (!regex.test(req.param('email'))) {
+		console.log("Email failed regex validation: " + req.param('email'));
+		response.error = "Email failed regex validation: " + req.param('email');
+		res.send(response);
+		return false;
+	}
 	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
 	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		console.log("mongo user="+JSON.stringify(user));
@@ -557,6 +572,7 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 			console.log("Email not found, proceeding with registration");
 			var newUser = new User({
 				"email":req.param('email').toLowerCase(),
+				//encrypt password if domain is not the test domain of email.com
 				"password":req.param('email').indexOf('email.com') > 0 ? req.param('password') : bcrypt.hashSync(req.param('password')),
 				"roles":""
 			});
