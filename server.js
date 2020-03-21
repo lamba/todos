@@ -564,7 +564,7 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 		response.error = "Email failed regex validation: " + req.param('email');
 		res.send(response);
 		return false;
-	}
+	};
 	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
 	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		console.log("mongo user="+JSON.stringify(user));
