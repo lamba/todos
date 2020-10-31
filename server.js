@@ -21,7 +21,7 @@ var
 	nodemailer,
 	transporter,
 	mailOptions,
-	todosVersion = "v0.1.10",
+	todosVersion = "v0.1.11",
 	sid,
 	cors,
 
@@ -117,11 +117,20 @@ server.options('/api/todo/:id', cors()); // enable pre-flight request for DELETE
 //     };
 // });
 
-mongoose.connect(process.env.MONGOLAB_URI || mongoURI, function(err) {
+//replaced with mongo atlas
+// mongoose.connect(process.env.MONGOLAB_URI || mongoURI, function(err) {
+// 	if (err) {
+// 		throw err;
+// 	} else {
+// 		console.log("Connected to Mongo on URI " + (process.env.MONGOLAB_URI || mongoURI));
+// 	};
+// });
+
+mongoose.connect(process.env.MONGOATLAS_URI || mongoURI, function(err) {
 	if (err) {
 		throw err;
 	} else {
-		console.log("Connected to Mongo on URI " + (process.env.MONGOLAB_URI || mongoURI));
+		console.log("Connected to Mongo on URI " + (process.env.MONGOATLAS_URI || mongoURI));
 	};
 });
 
