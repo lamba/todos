@@ -1,13 +1,13 @@
 {
   "name": "Todos",
-  "version": "0.1.1",
+  "version": "0.1.12",
   "description": "Todos",
   "main": "server.js",
   "dependencies": {
     "express": "^4.10.0",
 		"body-parser": "1.9.x",
 		"http": "0.0.0",
-		"mongoose": "4.4.x",
+		"mongoose": "5.10.x",
 		"passport": "0.2.1",
 		"passport-local": "1.0.0",
 		"bcrypt-nodejs": "0.0.3",

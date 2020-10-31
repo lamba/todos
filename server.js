@@ -21,7 +21,7 @@ var
 	nodemailer,
 	transporter,
 	mailOptions,
-	todosVersion = "v0.1.11",
+	todosVersion = "v0.1.12",
 	sid,
 	cors,
 
