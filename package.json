@@ -4,7 +4,7 @@
   "description": "Todos",
   "main": "server.js",
   "dependencies": {
-    "express": "^4.10.0",
+    "express": "^4.17.3",
     "body-parser": "1.9.x",
     "http": "0.0.0",
     "mongoose": "5.10.x",
