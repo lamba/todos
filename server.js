@@ -128,6 +128,9 @@ server.options('/api/todo/:id', cors()); // enable pre-flight request for DELETE
 // 	};
 // });
 
+//error after upgrading to mongoose 8
+//Mongoose.prototype.connect() no longer accepts a callback
+//attempted async version below but abandoned
 mongoose.connect(process.env.MONGOATLAS_URI || mongoURI, function(err) {
 	if (err) {
 		throw err;
@@ -135,6 +138,19 @@ mongoose.connect(process.env.MONGOATLAS_URI || mongoURI, function(err) {
 		console.log("Connected to Mongo on URI " + (process.env.MONGOATLAS_URI || mongoURI));
 	};
 });
+/*
+mongoose.connect(process.env.MONGOATLAS_URI || mongoURI, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+})
+	.then(() => {
+		console.log("Connected to Mongo on URI " + (process.env.MONGOATLAS_URI || mongoURI));
+	})
+	.catch(err => {
+		//throw err;
+		console.error('Error connecting to MongoDB:', err);
+	});
+*/
 
 Schema = mongoose.Schema;
 
@@ -736,6 +752,7 @@ server.post("/login", urlencodedParser, function (req, res) {
 		res.send("Error: Invalid email");
 		return false;
 	};
+	//MongooseError: Model.findOne() no longer accepts a callback - attempted async version below but abandoned for now
 	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) {
 			console.log(JSON.stringify(err));
@@ -763,6 +780,15 @@ server.post("/login", urlencodedParser, function (req, res) {
 			return false;
 		};
 	});
+	/*
+	async function getUserById(id) {
+  		try {
+    		const user = await User.findOne({ 'email':req.body.email.toLowerCase() });
+    		return user;
+  		} catch (err) {
+    		throw err;
+  	}
+  	*/
 });
 
 server.post("/loginEncrypted", urlencodedParser, function (req, res) {

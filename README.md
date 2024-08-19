@@ -36,3 +36,9 @@ To run on Heroku
 ================
 	see heroku-notes.txt, git-notes.txt, todos-notes.txt
 
+To build
+========
+	only needed if you change dependencies in package.json
+	npm install
+	npm ci
+	should both be needed?
