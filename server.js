@@ -21,7 +21,7 @@ var
 	nodemailer,
 	transporter,
 	mailOptions,
-	todosVersion = "v0.1.12",
+	todosVersion = "v0.1.13",
 	sid,
 	cors,
 
@@ -45,8 +45,10 @@ transporter = nodemailer.createTransport('direct', {
 	debug:true
 });
 
-port = 8080;
-mongoURI = 'mongodb://localhost/test';
+port = 8085;
+//mongoURI = 'mongodb://localhost/test';
+//port = 27017;
+mongoURI = 'mongodb://localhost/todos';
 server = express();
 
 server.use(express.static(__dirname + "/client"));
@@ -206,7 +208,7 @@ server.get("/hello",function (req, res) {
 });
 
 server.post("/getTodos", urlencodedParser, function (req, res) {
-	console.log("/getTodos request: " + req.body);
+	console.log("/getTodos request: " + JSON.stringify(req.body));
 	ToDo.find({'email':req.body.email.toLowerCase()}, function (err, result) {
 		res.send(result);		
 	});
@@ -216,11 +218,11 @@ server.post("/removeTodo", urlencodedParser, function (req, res) {
 	console.log("/removeTodo request: " + JSON.stringify(req.body));
 	ToDo.findOne({'_id':req.body._id}, function (err, result) {
 		if (err !== null) {
-			console.log("removeTodo findOne error:" + err);
+			console.log("removeTodo findOne error:" + JSON.stringify(err));
 			res.send(result);
 			return false;
 		} else {
-			console.log("removeTodo findOne result:" + result);		
+			console.log("removeTodo findOne result:" + JSON.stringify(result));		
 			if (req.body.completed_date !== null) {
 				result.completed_date = req.body.completed_date;
 			}
@@ -234,19 +236,19 @@ server.post("/deleteTodo", urlencodedParser, function (req, res) {
 	console.log("/deleteTodo request: " + JSON.stringify(req.body));
 	ToDo.findOne({'_id':req.body._id}, function (err, result) {
 		if (err !== null) {
-			console.log("deleteTodo findOne error:" + err);
+			console.log("deleteTodo findOne error:" + JSON.stringify(err));
 			res.send(result);
 			return false;
 		} else {
-			console.log("deleteTodo findOne result:" + result);		
+			console.log("deleteTodo findOne result:" + JSON.stringify(result));		
 			result.deleted_date = req.body.deleted_date;
 			result.save(function(error, response){
 				if (error !== null) {
-					console.log("deleteTodo save error:" + error);
+					console.log("deleteTodo save error:" + JSON.stringify(error));
 					res.send(response);
 					return false;
 				} else {
-					console.log("deleteTodo save response:" + response);		
+					console.log("deleteTodo save response:" + JSON.stringify(response));		
 					res.send(response);
 					//return true;
 				};
@@ -259,11 +261,11 @@ server.post("/updateAnonymousTodo", urlencodedParser, function (req, res) {
 	console.log("/updateAnonymousTodo request: " + JSON.stringify(req.body));
 	ToDo.findOne({'_id':req.body._id}, function (err, result) {
 		if (err !== null) {
-			console.log(err);
+			console.log(JSON.stringify(err));
 			res.send(result);
 			return false;
 		} else {
-			console.log(result);		
+			console.log(JSON.stringify(result));		
 			if (result !== null) {
 				result.email = req.body.email;
 				result.save();
@@ -329,10 +331,10 @@ server.get("/getTodosSorted.cors", urlencodedParser, function (req, res) {
 server.post("/api/todo", urlencodedParser, function (req, res) {
 	var response = {};
 	console.log("post /api/todo");
-	console.log("description:"+req.param('description'));
+	console.log("description:" + req.param('description'));
 	if (!req.param('description')) { //undefined
 		response.error = 'Error - todo is not valid: ' + req.param('description');
-		console.log(response.error);
+		console.log(JSON.stringify(response.error));
 		res.status(400).send(response); //how to return an error 4xx=client error, 5xx=server error
 		return false;
 	};
@@ -343,12 +345,12 @@ server.post("/api/todo", urlencodedParser, function (req, res) {
 	});
 	newTodo.save( function (err, result) {
 		if (err !== null) {
-			console.log(err);
-			console.log(result);
+			console.log(JSON.stringify(err));
+			console.log(JSON.stringify(result));
 			res.send(result);			
 			return false;
 		} else {
-			console.log(result);
+			console.log(JSON.stringify(result));
 			res.send(result);			
 		};
 	});
@@ -374,16 +376,16 @@ server.put("/api/todo", urlencodedParser, function (req, res) {
 	ToDo.findOne({'_id':req.param('_id')}, function (err, result) {
 		if (err !== null) {
 			response.error = err;
-			console.log(err);
+			console.log(JSON.stringify(err));
 			res.send(result);
 			return false;
 		} else {
-			console.log('findOne result='+result);		
+			console.log('findOne result=' + JSON.stringify(result));		
 			if (result !== null) {
 				result.completed_date = typeof req.param('completed_date') === 'undefined' ? undefined : req.param('completed_date');
 				result.description = req.param('description');
 				result.save();
-				console.log("final result:"+result);
+				console.log("final result:" + JSON.stringify(result));
 				res.send(result);			
 			} else {
 				response.error = "Todo not found";
@@ -398,7 +400,7 @@ server.delete("/api/todo", urlencodedParser, function (req, res) {
 	console.log("delete /api/todo id: " + req.param('_id'));
 	ToDo.findOne({'_id':req.param('_id')}, function (err, result) {
 		if (err !== null) {
-			console.log("findOne error:" + err);
+			console.log("findOne error:" + JSON.stringify(err));
 			res.send(err);
 			return false;
 		} else if (result === null) {
@@ -406,15 +408,15 @@ server.delete("/api/todo", urlencodedParser, function (req, res) {
 			res.send(result);
 			return false;
 		} else {
-			console.log("findOne result:" + result);		
+			console.log("findOne result:" + JSON.stringify(result));		
 			result.deleted_date = new Date();
 			result.save(function(error, response){
 				if (error !== null) {
-					console.log("save error:" + error);
+					console.log("save error:" + JSON.stringify(error));
 					res.send(response);
 					return true;
 				} else {
-					console.log("save response:" + response);		
+					console.log("save response:" + JSON.stringify(response));		
 					res.send(response);
 					//return true;
 				};
@@ -437,7 +439,7 @@ server.delete("/api/user", urlencodedParser, function (req, res) {
 	console.log("delete /api/user email: " + req.param('email'));
 	User.findOne({'email':req.param('email')}, function (err, result) {
 		if (err !== null) {
-			console.log("findOne error:" + err);
+			console.log("findOne error:" + JSON.stringify(err));
 			res.send(err);
 			return false;
 		} else if (result === null) {
@@ -445,14 +447,14 @@ server.delete("/api/user", urlencodedParser, function (req, res) {
 			res.send(result);
 			return false;
 		} else {
-			console.log("findOne result:" + result);		
+			console.log("findOne result:" + JSON.stringify(result));		
 			result.remove(function(error, response){
 				if (error !== null) {
-					console.log("remove error:" + error);
+					console.log("remove error:" + JSON.stringify(error));
 					res.send(response);
 					return true;
 				} else {
-					console.log("remove response:" + response);		
+					console.log("remove response:" + JSON.stringify(response));		
 					res.send(response);
 					//return true;
 				};
@@ -470,43 +472,43 @@ server.put("/api/user", urlencodedParser, function (req, res) {
 	if (!sendEmail(req.param('email').toLowerCase())) {
 	//if (!sendEmail(req.body.email.toLowerCase())) {
 		response.error = 'Invalid email';
-		console.log(response.error);
+		console.log(JSON.stringify(response.error));
 		res.send(response);
 		return false;
 	};
 	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
 	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) { //error
-			console.log('findOne error:'+err);
+			console.log('findOne error:' + JSON.stringify(err));
 			response.error = 'Email not registered';
-			console.log(response.error);
+			console.log(JSON.stringify(response.error));
 			res.send(response);
 			return false;
 		} else { //success
-			console.log("fineOne success: email=" + user.email + ", password=" + user.password);
+			console.log("fineOne success: email=" + JSON.stringify(user.email) + ", password=" + JSON.stringify(user.password));
 			//don't encrypt users with email.com test addresses
 			if (req.param('email').indexOf("email.com") > 0) {
 				if (req.param('password') !== user.password) { //error
 					response.error = "Invalid password";
-					console.log(response.error);
+					console.log(JSON.stringify(response.error));
 					res.send(response);		
 					return false;
 				}
 			} else if (!bcrypt.compareSync(req.param('password'), user.password)) { //error
 					response.error = "Invalid password";
-					console.log(response.error);
+					console.log(JSON.stringify(response.error));
 					res.send(response);		
 					return false;
 			};
 			user.update({last_login_date:new Date()}, function(update_err, result) {
 				if (update_err !== null) { //error
 					response.error = update_err;
-					console.log(response.error);
+					console.log(JSON.stringify(response.error));
 					res.send(response);
 					return false;
 				} else { //success
 					response.success = "Updated last login for user: " + user.email + ", Result: " + result
-					console.log(response.success);
+					console.log(JSON.stringify(response.success));
 					res.send(response);
 				};			
 			});						
@@ -561,7 +563,7 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 		response = {},
 		regex = /^[a-z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)?@[a-z][a-zA-Z-0-9]*\.[a-z]+(\.[a-z]+)?$/;
 	console.log("post /api/user request:" + JSON.stringify(req.body));
-	console.log("cookies: " + req.Cookies);
+	console.log("cookies: " + JSON.stringify(req.Cookies));
 	if (!sendEmail(req.param('email').toLowerCase())) {
 	//if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Invalid email');
@@ -576,7 +578,7 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 	};
 	User.findOne({'email':req.param('email').toLowerCase()}, function(err, user) {
 	//User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
-		console.log("mongo user="+JSON.stringify(user));
+		console.log("mongo user=" + JSON.stringify(user));
 		if (!user) { //email not found
 			console.log("Email not found, proceeding with registration");
 			var newUser = new User({
@@ -587,7 +589,7 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 			});
 			newUser.save(function(err, result) {
 				if (err !== null) {
-					console.log("error="+err);
+					console.log("error=" + JSON.stringify(err));
 					res.send("Error:"+err);
 					return false;
 				} else {
@@ -596,7 +598,7 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 				};
 			});
 		} else { //email found
-			console.log("Error: Email already registered. " + err);
+			console.log("Error: Email already registered. " + JSON.stringify(err));
 			response.error = "Error: Email already registered";
 			//res.send("Error: Email already registered");
 			res.send(response);
@@ -609,7 +611,7 @@ server.post("/api/user", urlencodedParser, function (req, res) {
 //use http://localhost/alltodos.json
 server.get("/alltodos.json", urlencodedParser, function (req, res) {
 	ToDo.find({}, function (err, todosList) {
-		console.log("sid:" + req.sessionID);
+		console.log("sid:" + JSON.stringify(req.sessionID));
 		res.json(todosList);
 	});
 });
@@ -617,14 +619,14 @@ server.get("/alltodos.json", urlencodedParser, function (req, res) {
 //for cross origin calls from decouple client, e.g. angular/bootstrap
 server.get("/alltodos.jsonp", urlencodedParser, function (req, res) {
 	ToDo.find({}, function (err, todosList) {
-		console.log("/alltodos.jsonp sid:" + req.sessionID);
+		console.log("/alltodos.jsonp sid:" + JSON.stringify(req.sessionID));
 		res.jsonp(todosList);
 	});
 });
 
 server.post("/addTodo", urlencodedParser, function (req, res) {
 	console.log("/addTodo request: ");
-	console.log(req.body);
+	console.log(JSON.stringify(req.body));
 	var newTodo = new ToDo({
 		"description":req.body.description,
 		"email":req.body.email,
@@ -632,19 +634,23 @@ server.post("/addTodo", urlencodedParser, function (req, res) {
 	});
 	newTodo.save( function (err, result) {
 		if (err !== null) {
-			console.log(err);
-			console.log(result);
+			console.log(JSON.stringify(err));
+			console.log(JSON.stringify(result));
 			res.send(result);			
 			return false;
 		} else {
-			console.log(result);
+			console.log(JSON.stringify(result));
 			res.send(result);			
 		};
 	});
 });
 
 server.post("/register", urlencodedParser, function (req, res) {
-	console.log("/register request: " + req.body);
+	//this line was failing on heroku with the error
+	//TypeError: Cannot convert object to primitive value
+	console.log("/register request: " + JSON.stringify(req.body));
+	//therefore changed all similar occurrences to the following and it works fine now
+	console.log("/register request: " + JSON.stringify(req.body));
 	if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Invalid email');
 		res.send("Error: Invalid email");
@@ -657,7 +663,7 @@ server.post("/register", urlencodedParser, function (req, res) {
 	});
 	newUser.save( function (err, result) {
 		if (err !== null) {
-			console.log(err);
+			console.log(JSON.stringify(err));
 			res.send("Error: " + err);
 			return false;
 		} else {
@@ -668,7 +674,7 @@ server.post("/register", urlencodedParser, function (req, res) {
 });
 
 server.post("/registerEncrypted", urlencodedParser, function (req, res) {
-	console.log("/registerEncrypted request: " + req.body);
+	console.log("/registerEncrypted request: " + JSON.stringify(req.body));
 	if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Could not send email to confirm registration');
 		res.send("Error: Could not send email to confirm registration");
@@ -681,7 +687,7 @@ server.post("/registerEncrypted", urlencodedParser, function (req, res) {
 	});
 	newUser.save( function (err, result) {
 		if (err !== null) {
-			console.log(err);
+			console.log(JSON.stringify(err));
 			res.send("Error: " + err);
 			return false;
 		} else {
@@ -717,14 +723,14 @@ sendEmail = function (email) {
 };
 
 server.get("/cookies", urlencodedParser, function (req, res) {
-	console.log("/cookies request: " + req.body);
+	console.log("/cookies request: " + JSON.stringify(req.body));
 	res.send(req.Cookies);
 });
 
 server.post("/login", urlencodedParser, function (req, res) {
 	console.log("/login request: ");
-	console.log(req.body);
-	console.log("cookies: " + req.Cookies);
+	console.log(JSON.stringify(req.body));
+	console.log("cookies: " + JSON.stringify(req.Cookies));
 	if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Invalid email');
 		res.send("Error: Invalid email");
@@ -732,22 +738,22 @@ server.post("/login", urlencodedParser, function (req, res) {
 	};
 	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) {
-			console.log(err);
+			console.log(JSON.stringify(err));
 			res.send("Email not registered");
 			return false;
 		} else {
-			console.log("email:" + user.email + ", password: " + user.password);
+			console.log("email:" + JSON.stringify(user.email) + ", password: " + JSON.stringify(user.password));
 		};
 		if (req.body.password === user.password) {
 			user.update({last_login_date:new Date()}, function(update_err, result) {
 				if (update_err !== null) {
-					console.log(update_err);
+					console.log(JSON.stringify(update_err));
 					res.send("Error: " + update_err);
 					return false;
 				} else {
-					console.log("Updated last login for user: " + user.email + ", Result: " + result);
+					console.log("Updated last login for user: " + JSON.stringify(user.email) + ", Result: " + JSON.stringify(result));
 					console.log("session:" + JSON.stringify(req.session));
-					console.log("sid:" + req.sessionID);
+					console.log("sid:" + JSON.stringify(req.sessionID));
 				};			
 			});
 			res.send("Success");
@@ -761,8 +767,8 @@ server.post("/login", urlencodedParser, function (req, res) {
 
 server.post("/loginEncrypted", urlencodedParser, function (req, res) {
 	console.log("/loginEncrypted request:");
-	console.log(req.body);
-	console.log("cookies: " + req.Cookies);
+	console.log(JSON.stringify(req.body));
+	console.log("cookies: " + JSON.stringify(req.Cookies));
 	if (!sendEmail(req.body.email.toLowerCase())) {
 		console.log('Invalid email');
 		res.send("Error: Invalid email");
@@ -770,20 +776,20 @@ server.post("/loginEncrypted", urlencodedParser, function (req, res) {
 	};
 	User.findOne( {'email':req.body.email.toLowerCase()}, function(err, user) {
 		if (!user) {
-			console.log(err);
+			console.log(JSON.stringify(err));
 			res.send("Email not registered");
 			return false;
 		} else {
-			console.log("email:" + user.email + ", password: " + user.password);
+			console.log("email:" + JSON.stringify(user.email) + ", password: " + JSON.stringify(user.password));
 		};
 		if (bcrypt.compareSync(req.body.password, user.password)) {
 			user.update({last_login_date:new Date()}, function(update_err, result) {
 				if (update_err !== null) {
-					console.log(update_err);
+					console.log(JSON.stringify(update_err));
 					res.send("Error: " + update_err);
 					return false;
 				} else {
-					console.log("Updated last login for user: " + user.email + ", Result: " + result);
+					console.log("Updated last login for user: " + JSON.stringify(user.email) + ", Result: " + JSON.stringify(result));
 				};			
 			});
 			res.send("Success");
