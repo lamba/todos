@@ -49,6 +49,7 @@ port = 8085;
 //mongoURI = 'mongodb://localhost/test';
 //port = 27017;
 mongoURI = 'mongodb://localhost/todos';
+//mongoURI = 'mongodb+srv://puneet:mongoshake@todos.u1muo.mongodb.net/todos?retryWrites=true&w=majority&appName=todos';
 server = express();
 
 server.use(express.static(__dirname + "/client"));
